@@ -17,10 +17,10 @@ This plan prioritizes:
 **Goal:** Set up unit testing before writing any business logic
 
 ### Tasks
-- [ ] Add Vitest as dev dependency
-- [ ] Add `test` script to `package.json`
-- [ ] Create `src/lib/` directory for pure logic modules
-- [ ] Verify test runner with a trivial test
+- [x] Add Vitest as dev dependency
+- [x] Add `test` script to `package.json`
+- [x] Create `src/lib/` directory for pure logic modules
+- [x] Verify test runner with a trivial test
 
 ### Commands
 ```bash
