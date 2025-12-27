@@ -3,13 +3,15 @@
  * 
  * Groups components by category with add/remove controls.
  * Uses explicit recalculate model - no reactive input handlers.
+ * Sparkline previews update in real-time for immediate feedback.
  */
 
 import { ComponentCategory } from '../lib/components';
-import { UIComponent, getComponentsByCategory, UIState, StateManager, SeriesType } from './state';
+import { UIComponent, getComponentsByCategory, UIState, StateManager, SeriesType, getComponentSeries } from './state';
 import { renderComponentEditor } from './component-editor';
 import { totalByCategory } from '../lib/components';
-import { formatCurrency } from './preview';
+import { formatCurrency, renderTimeSeriesPreview } from './preview';
+import { constant, linear, ratio, TimeSeries } from '../lib/timeseries';
 
 const CATEGORY_CONFIG: Record<ComponentCategory, { title: string; icon: string; addLabel: string }> = {
   income: { title: 'Income', icon: '💰', addLabel: '+ Add Income Source' },
@@ -126,10 +128,68 @@ export function setupCategoryListeners(
     });
   });
   
-  // All text/number inputs - mark state as stale on change (not re-render)
+  // All text/number inputs - mark state as stale and update preview
   container.querySelectorAll<HTMLInputElement>('.component-input, .segment-input, .component-name-input').forEach(input => {
     input.addEventListener('input', () => {
       stateManager.markStale();
+      
+      // Update sparkline preview in real-time
+      const componentId = input.dataset.componentId;
+      if (componentId) {
+        updateComponentPreview(container, componentId, stateManager);
+      }
     });
   });
+}
+
+/**
+ * Update the sparkline preview for a component based on current DOM values.
+ */
+function updateComponentPreview(
+  container: HTMLElement,
+  componentId: string,
+  stateManager: StateManager
+): void {
+  const state = stateManager.get();
+  const component = state.components.find(c => c.id === componentId);
+  if (!component) return;
+  
+  const card = container.querySelector(`.component-card[data-component-id="${componentId}"]`);
+  if (!card) return;
+  
+  const previewContainer = card.querySelector('.component-preview');
+  if (!previewContainer) return;
+  
+  // Read current values from DOM
+  const series = buildSeriesFromDOM(card, component);
+  const previewYears = Math.min(state.projectionYears, 15);
+  const preview = renderTimeSeriesPreview(series, state.baseYear, previewYears);
+  
+  previewContainer.innerHTML = preview;
+}
+
+/**
+ * Build a TimeSeries from current DOM input values.
+ */
+function buildSeriesFromDOM(card: Element, component: UIComponent): TimeSeries {
+  const getValue = (field: string): number => {
+    const input = card.querySelector<HTMLInputElement>(`.component-input[data-field="${field}"]`);
+    if (!input) return 0;
+    const isPercent = input.dataset.isPercent === 'true';
+    let value = parseFloat(input.value) || 0;
+    if (isPercent) value = value / 100;
+    return value;
+  };
+  
+  switch (component.seriesType) {
+    case 'constant':
+      return constant(getValue('value'));
+    case 'linear':
+      return linear(getValue('startValue'), getValue('yearlyIncrement'));
+    case 'ratio':
+      return ratio(getValue('startValue'), getValue('yearlyGrowthRate'));
+    case 'composite':
+      // For composite, just use the state-based series (too complex to build from DOM)
+      return getComponentSeries(component);
+  }
 }

@@ -272,10 +272,12 @@ body {
 
 .input-prefix,
 .input-suffix {
-  padding: 0 var(--spacing-sm);
-  font-size: 0.875rem;
+  padding: 0 var(--spacing-xs);
+  font-size: 0.8rem;
   color: var(--color-text-dim);
   font-family: var(--font-mono);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .input-wrapper input {
@@ -814,7 +816,13 @@ body {
 .series-inputs-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
+}
+
+@media (max-width: 500px) {
+  .series-inputs-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .series-inputs .input-field {
