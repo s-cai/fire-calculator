@@ -469,7 +469,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
       );
       // Re-render form to show new inputs, but mark stale
       state.isStale = true;
-      notify();
+      notifyAll();
     },
     
     updateSegmentType(componentId: string, segmentId: string, seriesType: 'constant' | 'linear' | 'ratio'): void {
@@ -483,7 +483,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
         };
       });
       state.isStale = true;
-      notify();
+      notifyAll();
     },
     
     addComponent(category: ComponentCategory): void {
@@ -491,13 +491,13 @@ export function createState(initial?: Partial<UIState>): StateManager {
       const newComponent = createDefaultComponent(category, existingCount);
       state.components = [...state.components, newComponent];
       state.isStale = true;
-      notify();
+      notifyAll();
     },
     
     deleteComponent(id: string): void {
       state.components = state.components.filter(c => c.id !== id);
       state.isStale = true;
-      notify();
+      notifyAll();
     },
     
     addSegment(componentId: string): void {
@@ -510,7 +510,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
         };
       });
       state.isStale = true;
-      notify();
+      notifyAll();
     },
     
     deleteSegment(componentId: string, segmentId: string): void {
@@ -522,7 +522,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
         };
       });
       state.isStale = true;
-      notify();
+      notifyAll();
     },
     
     loadComponents(baseYear: number, components: UIComponent[]): void {
