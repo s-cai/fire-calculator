@@ -547,6 +547,383 @@ body {
   color: var(--color-text-dim);
 }
 
+/* --- Category Sections --- */
+.categories-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+}
+
+.category-section {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.category-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.category-icon {
+  font-size: 1.25rem;
+}
+
+.category-title h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.category-total {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.category-total .per-year {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-left: 2px;
+}
+
+.category-section[data-category="income"] .category-total {
+  color: var(--color-income);
+}
+
+.category-section[data-category="spending"] .category-total {
+  color: var(--color-spending);
+}
+
+.category-section[data-category="investment"] .category-total {
+  color: var(--color-investment);
+}
+
+.category-components {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.empty-category {
+  text-align: center;
+  padding: var(--spacing-lg);
+  color: var(--color-text-dim);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.add-component-btn {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.add-component-btn:hover {
+  color: var(--color-fire);
+  border-color: var(--color-fire);
+  background: rgba(255, 107, 53, 0.05);
+}
+
+/* --- Component Cards --- */
+.component-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+}
+
+.component-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.component-name-input {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.component-name-input:hover {
+  border-color: var(--color-border);
+}
+
+.component-name-input:focus {
+  outline: none;
+  border-color: var(--color-fire);
+  background: var(--color-bg-input);
+}
+
+.delete-component-btn,
+.delete-segment-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--color-text-dim);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-component-btn:hover,
+.delete-segment-btn:hover {
+  color: var(--color-danger);
+  background: rgba(229, 62, 62, 0.1);
+}
+
+/* --- Series Type Selector --- */
+.series-type-selector {
+  display: flex;
+  gap: 2px;
+  margin-bottom: var(--spacing-md);
+  background: var(--color-bg-input);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.series-type-btn {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.series-type-btn:hover {
+  color: var(--color-text);
+}
+
+.series-type-btn.active {
+  color: var(--color-text);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- Series Inputs --- */
+.series-inputs {
+  margin-bottom: var(--spacing-md);
+}
+
+.series-inputs-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+/* --- Component Preview --- */
+.component-preview {
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.component-preview .sparkline {
+  width: 100%;
+  height: 50px;
+}
+
+/* --- Composite / Segments --- */
+.composite-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.segments-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.empty-segments {
+  text-align: center;
+  padding: var(--spacing-md);
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+  margin: 0;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.segment-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm);
+}
+
+.segment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.segment-years {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.year-input {
+  width: 70px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-text);
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.year-input:focus {
+  outline: none;
+  border-color: var(--color-fire);
+}
+
+.year-separator {
+  color: var(--color-text-dim);
+  font-weight: 500;
+}
+
+.segment-type-selector {
+  display: flex;
+  gap: 2px;
+  margin-bottom: var(--spacing-sm);
+  background: var(--color-bg-input);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.segment-type-btn {
+  flex: 1;
+  padding: 2px var(--spacing-xs);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.segment-type-btn:hover {
+  color: var(--color-text);
+}
+
+.segment-type-btn.active {
+  color: var(--color-text);
+  background: var(--color-bg-elevated);
+}
+
+.segment-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: var(--spacing-sm);
+}
+
+.segment-inputs .input-field label {
+  font-size: 0.7rem;
+}
+
+.segment-inputs .input-wrapper {
+  padding: 0;
+}
+
+.segment-inputs .input-wrapper input {
+  padding: var(--spacing-xs);
+  font-size: 0.85rem;
+}
+
+.segment-inputs .input-prefix,
+.segment-inputs .input-suffix {
+  font-size: 0.75rem;
+  padding: 0 var(--spacing-xs);
+}
+
+.add-segment-btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.add-segment-btn:hover {
+  color: var(--color-fire);
+  border-color: var(--color-fire);
+}
+
+/* --- Basic Params Group (Phase 6 update) --- */
+.basic-params {
+  margin-bottom: var(--spacing-md);
+}
+
+.basic-params .input-group-content {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 400px) {
+  .basic-params .input-group-content {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* --- Light Mode Support --- */
 @media (prefers-color-scheme: light) {
   :root {

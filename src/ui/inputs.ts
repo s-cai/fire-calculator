@@ -4,11 +4,9 @@
  * Form for configuring financial plan parameters.
  */
 
-import { StateManager, getIncomeSeries, getSpendingSeries, getInvestmentSeries } from './state';
-import { renderTimeSeriesPreview } from './preview';
+import { StateManager, convertToUIComponent } from './state';
 import { allExamples, ExampleScenario } from '../lib/examples';
-import { totalByCategory } from '../lib/components';
-import { constant, ratio, linear } from '../lib/timeseries';
+import { renderCategorySection, setupCategoryListeners } from './category-section';
 
 /**
  * Create a labeled input field.
@@ -49,29 +47,6 @@ function createInputField(
 }
 
 /**
- * Create an input group with preview.
- */
-function createInputGroup(
-  title: string,
-  inputs: string,
-  preview: string
-): string {
-  return `
-    <div class="input-group">
-      <div class="input-group-header">
-        <h3>${title}</h3>
-        <div class="preview-container">
-          ${preview}
-        </div>
-      </div>
-      <div class="input-group-content">
-        ${inputs}
-      </div>
-    </div>
-  `;
-}
-
-/**
  * Render example buttons.
  */
 function renderExampleButtons(): string {
@@ -92,6 +67,25 @@ function renderExampleButtons(): string {
 }
 
 /**
+ * Render the basic parameters section.
+ */
+function renderBasicParameters(state: ReturnType<StateManager['get']>): string {
+  return `
+    <div class="input-group basic-params">
+      <div class="input-group-header">
+        <h3>Basic Parameters</h3>
+      </div>
+      <div class="input-group-content">
+        ${createInputField('baseYear', 'Starting Year', state.baseYear, { min: 2000, max: 2100, step: 1 })}
+        ${createInputField('projectionYears', 'Projection Years', state.projectionYears, { min: 1, max: 50, step: 1, suffix: 'years' })}
+        ${createInputField('initialNetWorth', 'Initial Net Worth', state.initialNetWorth, { type: 'currency', step: 1000 })}
+        ${createInputField('investmentReturnRate', 'Investment Return', state.investmentReturnRate, { type: 'percent', min: -10, max: 30, step: 0.1 })}
+      </div>
+    </div>
+  `;
+}
+
+/**
  * Render the complete input form.
  */
 export function renderForm(container: HTMLElement, stateManager: StateManager): void {
@@ -104,43 +98,12 @@ export function renderForm(container: HTMLElement, stateManager: StateManager): 
       </div>
       
       ${renderExampleButtons()}
+      ${renderBasicParameters(state)}
       
-      <div class="input-groups">
-        ${createInputGroup(
-          'Basic Parameters',
-          `
-            ${createInputField('baseYear', 'Starting Year', state.baseYear, { min: 2000, max: 2100, step: 1 })}
-            ${createInputField('projectionYears', 'Projection Years', state.projectionYears, { min: 1, max: 50, step: 1, suffix: 'years' })}
-            ${createInputField('initialNetWorth', 'Initial Net Worth', state.initialNetWorth, { type: 'currency', step: 1000 })}
-            ${createInputField('investmentReturnRate', 'Investment Return', state.investmentReturnRate, { type: 'percent', min: -10, max: 30, step: 0.1 })}
-          `,
-          '' // No preview for basic parameters
-        )}
-        
-        ${createInputGroup(
-          'Income',
-          `
-            ${createInputField('annualIncome', 'Annual Income', state.annualIncome, { type: 'currency', step: 1000 })}
-            ${createInputField('incomeGrowthRate', 'Annual Growth', state.incomeGrowthRate, { type: 'percent', min: -10, max: 20, step: 0.1 })}
-          `,
-          renderTimeSeriesPreview(getIncomeSeries(state), state.baseYear, Math.min(state.projectionYears, 15))
-        )}
-        
-        ${createInputGroup(
-          'Spending',
-          `
-            ${createInputField('annualSpending', 'Annual Spending', state.annualSpending, { type: 'currency', step: 1000 })}
-          `,
-          renderTimeSeriesPreview(getSpendingSeries(state), state.baseYear, Math.min(state.projectionYears, 15))
-        )}
-        
-        ${createInputGroup(
-          'Investment',
-          `
-            ${createInputField('annualInvestment', 'Annual Contributions', state.annualInvestment, { type: 'currency', step: 1000 })}
-          `,
-          renderTimeSeriesPreview(getInvestmentSeries(state), state.baseYear, Math.min(state.projectionYears, 15))
-        )}
+      <div class="categories-container">
+        ${renderCategorySection('income', state)}
+        ${renderCategorySection('spending', state)}
+        ${renderCategorySection('investment', state)}
       </div>
     </div>
   `;
@@ -148,23 +111,20 @@ export function renderForm(container: HTMLElement, stateManager: StateManager): 
   container.innerHTML = html;
   
   // Wire up event listeners
-  setupInputListeners(container, stateManager);
+  setupBasicParamListeners(container, stateManager);
   setupExampleListeners(container, stateManager);
+  setupCategoryListeners(container, stateManager);
 }
 
 /**
- * Setup input change listeners.
+ * Setup basic parameter input listeners.
  */
-function setupInputListeners(container: HTMLElement, stateManager: StateManager): void {
+function setupBasicParamListeners(container: HTMLElement, stateManager: StateManager): void {
   const inputMappings: Array<{ id: string; key: keyof ReturnType<StateManager['get']>; isPercent?: boolean }> = [
     { id: 'baseYear', key: 'baseYear' },
     { id: 'projectionYears', key: 'projectionYears' },
     { id: 'initialNetWorth', key: 'initialNetWorth' },
     { id: 'investmentReturnRate', key: 'investmentReturnRate', isPercent: true },
-    { id: 'annualIncome', key: 'annualIncome' },
-    { id: 'incomeGrowthRate', key: 'incomeGrowthRate', isPercent: true },
-    { id: 'annualSpending', key: 'annualSpending' },
-    { id: 'annualInvestment', key: 'annualInvestment' },
   ];
   
   inputMappings.forEach(({ id, key, isPercent }) => {
@@ -173,7 +133,7 @@ function setupInputListeners(container: HTMLElement, stateManager: StateManager)
       input.addEventListener('input', () => {
         let value = parseFloat(input.value) || 0;
         if (isPercent) {
-          value = value / 100; // Convert from percentage to decimal
+          value = value / 100;
         }
         stateManager.set({ [key]: value });
       });
@@ -205,39 +165,11 @@ function setupExampleListeners(container: HTMLElement, stateManager: StateManage
 function loadExample(example: ExampleScenario, stateManager: StateManager): void {
   const plan = example.plan;
   
-  // Extract values from the example plan
-  // Find the first income component
-  const incomeComponent = plan.components.find(c => c.category === 'income');
-  let annualIncome = 0;
-  let incomeGrowthRate = 0;
-  
-  if (incomeComponent) {
-    const series = incomeComponent.series;
-    if (series.type === 'constant') {
-      annualIncome = series.value;
-    } else if (series.type === 'ratio') {
-      annualIncome = series.startValue;
-      incomeGrowthRate = series.yearlyGrowthRate;
-    } else if (series.type === 'linear') {
-      annualIncome = series.startValue;
-    }
-  }
-  
-  // Sum all income at base year
-  annualIncome = totalByCategory(plan, 'income', plan.baseYear);
-  
-  // Sum all spending at base year
-  const annualSpending = totalByCategory(plan, 'spending', plan.baseYear);
-  
-  // Sum all investment at base year
-  const annualInvestment = totalByCategory(plan, 'investment', plan.baseYear);
+  // Convert all components to UI format
+  const components = plan.components.map(c => convertToUIComponent(c));
   
   stateManager.set({
     baseYear: plan.baseYear,
-    annualIncome,
-    incomeGrowthRate,
-    annualSpending,
-    annualInvestment,
+    components,
   });
 }
-
