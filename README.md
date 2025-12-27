@@ -4,18 +4,20 @@ A financial independence / retire early (FIRE) calculator — a static webpage f
 
 ## Current Status
 
-🚧 **Project Phase:** Planning & Design
+🚧 **Project Phase:** Development Environment Ready
 
 - Repository initialized
 - Development guidelines established in `.cursor/rules/`
 - Feature requirements documented (see below)
+- Vite + TypeScript setup complete
 - **Next:** Create implementation roadmap
 
 ## Tech Stack
 
 - **Frontend:** Static HTML/CSS
 - **Logic:** TypeScript (all calculations and interactivity)
-- **Build:** TBD (likely Vite or similar)
+- **Build:** Vite (compiles TS → JS, outputs static files)
+- **Hosting:** GitHub Pages
 
 ## Planned Features
 
@@ -23,20 +25,14 @@ A financial independence / retire early (FIRE) calculator — a static webpage f
 
 The calculator starts with a minimal, approachable interface but reveals advanced configuration as needed. Users can go from "quick estimate" to "detailed projection" without switching tools.
 
-### 2. Configurable Inputs
+### 2. Configurable Input Categories
 
-#### Core Categories
+The core input categories are:
 - **Income** — Salary, side hustles, passive income, Social Security, pensions
 - **Spending** — Living expenses, discretionary, one-time large purchases
 - **Investments** — Contributions, expected returns, asset allocation
 
-#### Suggested Additional Configurables
-- **Tax rates** — Federal, state, effective rates over time
-- **Inflation rate** — For adjusting projections to real dollars
-- **Withdrawal strategy** — Safe withdrawal rate, variable strategies
-- **Current net worth / savings** — Starting point for projections
-- **Age parameters** — Current age, target retirement age, life expectancy
-- **Healthcare costs** — Often a critical FIRE consideration
+Additional parameters (tax rates, inflation, healthcare costs, etc.) are simply more inputs using the same flexible system described below.
 
 ### 3. Time Series Inputs (Key Feature)
 
@@ -77,6 +73,18 @@ Final demonstration will include charts/graphs. Candidates for plotting:
 
 *Specific visualizations require further discussion.*
 
+### 6. Gallery of Pre-Populated Examples (Later Stage)
+
+A showcase of demo scenarios with pre-filled inputs to illustrate different FIRE paths:
+- Traditional FIRE (high savings rate, early retirement)
+- Coast FIRE (front-load investments, then coast)
+- Barista FIRE (part-time work in retirement)
+- Lean FIRE vs. Fat FIRE comparisons
+- Single income vs. dual income households
+- Career change / sabbatical scenarios
+
+Users can load any example as a starting point and customize from there.
+
 ## Development Approach
 
 This project is primarily AI-generated under close human supervision:
@@ -86,10 +94,23 @@ This project is primarily AI-generated under close human supervision:
 
 ## Setup
 
-*Setup instructions will be added once the project structure is established.*
+```bash
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+# → Opens at http://localhost:5173/fire-calculator/
+
+# Build for production
+npm run build
+# → Outputs to dist/
+
+# Preview production build
+npm run preview
+```
 
 ## Known Limitations
 
-- Project is in planning phase — no implementation yet
+- UI is placeholder only — no features implemented yet
 - Visualization strategy not finalized
-- Tax modeling complexity TBD
