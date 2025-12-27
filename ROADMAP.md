@@ -1,11 +1,13 @@
-# FIRE Calculator — Implementation Roadmap
+# Financial Planner — Implementation Roadmap
 
 **Created:** 2025-12-27  
 **Starting Point:** Initial Vite + TypeScript setup (placeholder UI only)
 
+> **Note:** FIRE-specific features (4% rule, FIRE number) are deferred. Focus is on general financial planning.
+
 ## Context
 
-The FIRE Calculator needs to go from an empty scaffold to a fully functional financial projection tool. The key insight is that the **time series calculation engine** is the heart of the application — it enables flexible modeling of income, spending, and investments over time.
+This tool needs to go from an empty scaffold to a fully functional financial projection tool. The key insight is that the **time series calculation engine** is the heart of the application — it enables flexible modeling of income, spending, and investments over time.
 
 This plan prioritizes:
 1. **Testable core logic first** — pure TypeScript, no DOM dependencies
@@ -161,7 +163,7 @@ function aggregateByYear(
 
 ## Phase 3: Projection Engine ✅
 
-**Goal:** Simulate net worth over time, detect FIRE milestone
+**Goal:** Simulate net worth over time
 
 ### Files
 ```
@@ -187,8 +189,6 @@ interface YearlyProjection {
   spending: number;
   investment: number; // contributions
   netWorth: number;
-  fireProgress: number; // percentage toward FIRE number
-  isFIRE: boolean; // true if netWorth >= spending * 25
 }
 
 function projectNetWorth(params: ProjectionParams): YearlyProjection[]
@@ -199,20 +199,16 @@ Each year:
 1. Calculate income, spending, investment contributions
 2. Net cash flow = income - spending - investment contributions
 3. Net worth grows: `(previousNetWorth + investmentContributions) * (1 + returnRate) + netCashFlow`
-4. FIRE number = annual spending × 25 (4% rule)
-5. Mark `isFIRE = true` when net worth exceeds FIRE number
 
 ### Test Cases
 - Zero everything → net worth stays at initial
 - Pure savings (0% return) → linear growth
 - Pure returns (no contributions) → compound growth
-- Detect FIRE year correctly
 - Handle negative cash flow (spending > income)
 - Handle negative net worth scenarios
 
 ### Acceptance Criteria
 - Financial simulation is mathematically correct
-- FIRE detection works for various scenarios
 - 100% test coverage on `projection.ts`
 
 ---
@@ -231,11 +227,12 @@ src/lib/
 ### Tasks
 - [ ] Define JSON-serializable format for `FinancialPlan`
 - [ ] Create validation function for imported data
+- [ ] URL encoding with compression (lz-string)
 - [ ] Build 3-4 example scenarios:
-  - Traditional FIRE (high savings rate)
-  - Coast FIRE (front-load then coast)
+  - High savings rate professional
   - Dual income household
-  - Single income with career change
+  - Career change mid-life
+  - Single income with variable expenses
 
 ### Acceptance Criteria
 - Plans can be serialized to JSON and back
@@ -246,7 +243,14 @@ src/lib/
 
 ## Phase 5: Basic UI
 
-**Goal:** Functional input forms and results display (no charts)
+**Goal:** Functional input forms with real-time visual feedback
+
+### Key Principle: Real-Time Visual Feedback
+
+When users configure time series inputs, they must see immediate visual confirmation. For example:
+- User enters: salary $80k, growth 3%
+- UI shows: mini-chart of $80k → $82.4k → $84.9k → ... next to the input
+- User instantly confirms their input is correct
 
 ### Files
 ```
@@ -254,27 +258,27 @@ src/
   ui/
     inputs.ts        # Form generation and binding
     results.ts       # Display projection table
+    preview.ts       # Time series mini-charts
   main.ts            # Wire everything together
   style.css          # Styling
 ```
 
 ### MVP Interface
-1. **Simple inputs section:**
-   - Current age
-   - Target retirement age
+1. **Input section:**
    - Current net worth
-   - Annual income (single value for now)
-   - Annual spending
+   - Annual income (with time series preview)
+   - Annual spending (with time series preview)
    - Annual investment contributions
    - Expected return rate
+   - Projection years (start/end)
 
 2. **Results section:**
-   - Summary: FIRE age, years to FIRE
    - Table: year-by-year projection
-   - Highlight the FIRE year row
+   - Net worth trajectory
 
 ### Acceptance Criteria
 - Form inputs update projection in real-time
+- Each time series input shows inline preview chart
 - Table displays correctly
 - Works on desktop browsers
 
@@ -285,10 +289,10 @@ src/
 **Goal:** Add charts for visual understanding
 
 ### Tasks
-- [ ] Add Chart.js (or alternative)
+- [ ] Add Chart.js (or alternative lightweight library)
 - [ ] Net worth over time — line chart
-- [ ] Income vs. spending — stacked area or dual line
-- [ ] FIRE progress — percentage indicator or gauge
+- [ ] Income vs. spending over time — dual line or stacked area
+- [ ] Reuse chart component for time series input previews
 
 ### Acceptance Criteria
 - Charts render correctly
@@ -353,8 +357,25 @@ Each phase produces working code. If a phase causes problems:
 
 ---
 
+## Deferred Features
+
+The following are explicitly out of scope for the initial version:
+
+- **FIRE calculations** — 4% rule, FIRE number, years-to-FIRE detection
+- **Inflation modeling** — Users can model via ratio growth if needed
+- **Tax calculations** — Users input after-tax values
+- **Multiple return rates** — Single global rate for now
+- **Monthly granularity** — Annual projections only
+
+These may be added in a future "FIRE Features" phase.
+
+---
+
 ## Next Steps
 
-1. Begin Phase 0: Add Vitest
-2. Begin Phase 1: Implement `timeseries.ts` with TDD
+1. ~~Phase 0: Add Vitest~~ ✅
+2. ~~Phase 1: Time Series Engine~~ ✅
+3. ~~Phase 2: Financial Components~~ ✅
+4. ~~Phase 3: Projection Engine~~ ✅
+5. **Next: Phase 5 (Basic UI)** — Skip Phase 4 for now, add serialization later
 
