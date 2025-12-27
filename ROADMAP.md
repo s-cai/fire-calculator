@@ -213,7 +213,7 @@ Each year:
 
 ---
 
-## Phase 4: Data Model & Serialization
+## Phase 4: Data Model & Serialization ✅
 
 **Goal:** Define schema, enable save/load, create example scenarios
 
@@ -225,14 +225,14 @@ src/lib/
 ```
 
 ### Tasks
-- [ ] Define JSON-serializable format for `FinancialPlan`
-- [ ] Create validation function for imported data
-- [ ] URL encoding with compression (lz-string)
-- [ ] Build 3-4 example scenarios:
+- [x] Define JSON-serializable format for `FinancialPlan`
+- [x] Create validation function for imported data
+- [x] URL encoding with compression (lz-string)
+- [x] Build 4 example scenarios:
   - High savings rate professional
   - Dual income household
   - Career change mid-life
-  - Single income with variable expenses
+  - Variable income with major expenses
 
 ### Acceptance Criteria
 - Plans can be serialized to JSON and back
@@ -377,5 +377,6 @@ These may be added in a future "FIRE Features" phase.
 2. ~~Phase 1: Time Series Engine~~ ✅
 3. ~~Phase 2: Financial Components~~ ✅
 4. ~~Phase 3: Projection Engine~~ ✅
-5. **Next: Phase 5 (Basic UI)** — Skip Phase 4 for now, add serialization later
+5. ~~Phase 4: Serialization~~ ✅
+6. **Next: Phase 5 (Basic UI)** — Input forms with real-time visual feedback
 

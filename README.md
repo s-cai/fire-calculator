@@ -6,13 +6,15 @@ A financial projection tool — a static webpage for modeling income, spending, 
 
 ## Current Status
 
-🚧 **Project Phase:** Core Engine Complete
+🚧 **Project Phase:** Core Engine + Serialization Complete
 
 - ✅ Vite + TypeScript + Vitest setup
 - ✅ Time series engine (constant, linear, ratio, composite patterns)
 - ✅ Financial components (multi-component income/spending/investment)
 - ✅ Projection engine (net worth simulation)
-- ✅ 50 unit tests passing
+- ✅ Serialization (JSON + URL encoding with lz-string compression)
+- ✅ 4 example scenarios
+- ✅ 81 unit tests passing
 - **Next:** Phase 5 (Basic UI) — see [Implementation Roadmap](ROADMAP.md)
 
 📐 **Architecture:** See [DESIGN.md](DESIGN.md) for internal logic overview
