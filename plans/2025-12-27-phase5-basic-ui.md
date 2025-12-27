@@ -290,21 +290,6 @@ The UI is isolated from the core logic, so rollback is clean.
 
 ---
 
-## Estimated Effort
-
-| Step | Estimate |
-|------|----------|
-| Step 1: State model | 30 min |
-| Step 2: Preview component | 1 hour |
-| Step 3: Input form | 1 hour |
-| Step 4: Results display | 45 min |
-| Step 5: Wire together | 30 min |
-| Step 6: Styling | 1 hour |
-| Testing & polish | 1 hour |
-| **Total** | **~6 hours** |
-
----
-
 ## Decision Summary
 
 | Question | Decision |

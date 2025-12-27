@@ -397,23 +397,6 @@ The core calculation logic is unchanged, so rollback is safe.
 
 ---
 
-## Estimated Effort
-
-| Step | Estimate |
-|------|----------|
-| Step 1: Redesign state model | 1 hour |
-| Step 2: Component editor | 2 hours |
-| Step 3: Category section | 1 hour |
-| Step 4: Composite series UI | 1.5 hours |
-| Step 5: Update main form | 30 min |
-| Step 6: State-to-plan conversion | 1 hour |
-| Step 7: Example loading | 30 min |
-| Step 8: Styling | 1.5 hours |
-| Testing & polish | 1 hour |
-| **Total** | **~10 hours** |
-
----
-
 ## Migration Notes
 
 The state model is changing significantly. On first load after this update:
