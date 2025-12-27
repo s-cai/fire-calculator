@@ -1,12 +1,19 @@
 /**
  * Results Display Component
  * 
- * Shows projection summary and year-by-year table.
+ * Shows projection summary, charts, and year-by-year table.
+ * Uses Chart.js for visualization.
  */
 
+import { Chart } from 'chart.js';
 import { StateManager } from './state';
 import { formatCurrency, formatPercent } from './preview';
 import { YearlyProjection } from '../lib/projection';
+import { createNetWorthChart, createCashFlowChart, destroyChart } from './charts';
+
+// Store chart instances for cleanup
+let netWorthChart: Chart | null = null;
+let cashFlowChart: Chart | null = null;
 
 /**
  * Calculate summary statistics from projection.
@@ -130,69 +137,55 @@ function renderProjectionTable(projection: YearlyProjection[]): string {
 }
 
 /**
- * Render the net worth chart (simple bar visualization).
- * Handles both positive and negative values with a baseline.
+ * Render chart containers (canvas elements).
  */
-function renderNetWorthChart(projection: YearlyProjection[]): string {
-  if (projection.length === 0) {
-    return '';
-  }
-  
-  const values = projection.map(p => p.netWorth);
-  const maxVal = Math.max(...values);
-  const minVal = Math.min(...values);
-  
-  // Calculate the range and baseline position
-  const range = maxVal - minVal || 1; // Prevent division by zero
-  const hasNegative = minVal < 0;
-  const hasPositive = maxVal > 0;
-  
-  // Calculate baseline position (where 0 sits) as percentage from bottom
-  let baselinePercent = 0;
-  if (hasNegative && hasPositive) {
-    baselinePercent = (Math.abs(minVal) / range) * 100;
-  } else if (hasNegative) {
-    baselinePercent = 100; // All negative, baseline at top
-  }
-  // else all positive, baseline at bottom (0)
-  
-  const bars = projection.map((p, i) => {
-    const width = 100 / projection.length;
-    const isNegative = p.netWorth < 0;
-    
-    // Calculate height as percentage of total range
-    const heightPercent = (Math.abs(p.netWorth) / range) * 100;
-    
-    return `
-      <div class="chart-bar-container" style="width: ${width}%">
-        <div 
-          class="chart-bar ${isNegative ? 'negative' : ''}" 
-          style="height: ${heightPercent}%; ${isNegative ? 'bottom: auto; top: ' + (100 - baselinePercent) + '%;' : 'bottom: ' + baselinePercent + '%;'}"
-          title="${p.year}: ${formatCurrency(p.netWorth)}"
-        ></div>
-        ${i % 5 === 0 || i === projection.length - 1 ? `<span class="chart-label">${p.year}</span>` : ''}
-      </div>
-    `;
-  }).join('');
-  
-  // Show baseline if we have both positive and negative
-  const baseline = hasNegative && hasPositive 
-    ? `<div class="chart-baseline" style="bottom: ${baselinePercent}%"></div>` 
-    : '';
-  
+function renderChartContainers(): string {
   return `
-    <div class="chart-section">
-      <h3>Net Worth Growth</h3>
-      <div class="bar-chart">
-        ${baseline}
-        ${bars}
+    <div class="charts-section">
+      <div class="chart-container">
+        <h3>Net Worth Growth</h3>
+        <div class="chart-wrapper">
+          <canvas id="netWorthChart"></canvas>
+        </div>
       </div>
-      <div class="chart-legend">
-        <span class="legend-start">${formatCurrency(minVal)}</span>
-        <span class="legend-end">${formatCurrency(maxVal)}</span>
+      <div class="chart-container">
+        <h3>Income vs Spending</h3>
+        <div class="chart-wrapper">
+          <canvas id="cashFlowChart"></canvas>
+        </div>
       </div>
     </div>
   `;
+}
+
+/**
+ * Initialize Chart.js charts after DOM is ready.
+ */
+function initializeCharts(projection: YearlyProjection[]): void {
+  // Destroy existing charts
+  destroyChart(netWorthChart);
+  destroyChart(cashFlowChart);
+  netWorthChart = null;
+  cashFlowChart = null;
+  
+  if (projection.length === 0) return;
+  
+  const years = projection.map(p => p.year);
+  const netWorth = projection.map(p => p.netWorth);
+  const income = projection.map(p => p.income);
+  const spending = projection.map(p => p.spending);
+  
+  // Get canvas elements
+  const netWorthCanvas = document.getElementById('netWorthChart') as HTMLCanvasElement | null;
+  const cashFlowCanvas = document.getElementById('cashFlowChart') as HTMLCanvasElement | null;
+  
+  if (netWorthCanvas) {
+    netWorthChart = createNetWorthChart(netWorthCanvas, years, netWorth);
+  }
+  
+  if (cashFlowCanvas) {
+    cashFlowChart = createCashFlowChart(cashFlowCanvas, years, income, spending);
+  }
 }
 
 /**
@@ -230,13 +223,16 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
       
       <div class="results-content">
         ${renderSummary(state.projection, state.initialNetWorth)}
-        ${renderNetWorthChart(state.projection)}
+        ${renderChartContainers()}
         ${renderProjectionTable(state.projection)}
       </div>
     </div>
   `;
   
   container.innerHTML = html;
+  
+  // Initialize charts after DOM is updated
+  initializeCharts(state.projection);
   
   // Wire up recalculate button
   const recalcBtn = container.querySelector<HTMLButtonElement>('.recalculate-btn');
@@ -246,4 +242,3 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
     });
   }
 }
-

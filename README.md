@@ -6,7 +6,7 @@ A financial projection tool — a static webpage for modeling income, spending, 
 
 ## Current Status
 
-🚧 **Project Phase:** Advanced Time Series UI Complete
+🚧 **Project Phase:** Visualization Complete
 
 - ✅ Vite + TypeScript + Vitest setup
 - ✅ Time series engine (constant, linear, ratio, composite patterns)
@@ -22,7 +22,12 @@ A financial projection tool — a static webpage for modeling income, spending, 
   - Composite series with editable year ranges
   - Add/remove components and segments dynamically
   - Real-time sparkline previews for all series types
-- **Next:** Phase 7 (Full Chart Visualizations) — see [Implementation Roadmap](ROADMAP.md)
+- ✅ **Phase 7 Complete:** Visualization with Chart.js
+  - Net worth line chart with gradient fill
+  - Income vs. spending dual line chart
+  - Interactive tooltips with formatted values
+  - Responsive side-by-side layout on large screens
+- **Next:** Phase 8 (Polish & Examples Gallery) — see [Implementation Roadmap](ROADMAP.md)
 
 📐 **Architecture:** See [DESIGN.md](DESIGN.md) for internal logic overview
 
@@ -153,6 +158,6 @@ index.html                # HTML shell
 
 ## Known Limitations
 
-- No chart library yet (basic bar chart only) — planned for Phase 7
 - Mobile responsiveness planned for Phase 8
 - No persistence/sharing UI yet — planned for Phase 8
+- No simple/advanced mode toggle — planned for Phase 8

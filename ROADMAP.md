@@ -314,20 +314,20 @@ src/ui/
 
 ---
 
-## Phase 7: Visualization
+## Phase 7: Visualization ✅
 
 **Goal:** Add charts for visual understanding
 
 ### Tasks
-- [ ] Add Chart.js (or alternative lightweight library)
-- [ ] Net worth over time — line chart
-- [ ] Income vs. spending over time — dual line or stacked area
-- [ ] Reuse chart component for time series input previews
+- [x] Add Chart.js library
+- [x] Net worth over time — line chart with gradient fill
+- [x] Income vs. spending over time — dual line chart
+- [x] Responsive layout (side-by-side on large screens)
 
 ### Acceptance Criteria
-- Charts render correctly
-- Charts update when inputs change
-- Responsive on different screen sizes
+- Charts render correctly ✅
+- Charts update when inputs change ✅
+- Responsive on different screen sizes ✅
 
 ---
 
@@ -392,6 +392,11 @@ These may be added in a future "FIRE Features" phase.
 4. ~~Phase 3: Projection Engine~~ ✅
 5. ~~Phase 4: Serialization~~ ✅
 6. ~~Phase 5: Basic UI~~ ✅
-7. **Next: Phase 6 (Advanced Time Series UI)** — Full component configuration
-   - See: `plans/2025-12-27-phase6-advanced-time-series-ui.md`
+7. ~~Phase 6: Advanced Time Series UI~~ ✅
+8. ~~Phase 7: Visualization~~ ✅
+9. **Next: Phase 8 (Polish & Examples Gallery)** — Final polish and showcase
+   - Progressive disclosure (simple vs. advanced mode)
+   - Mobile responsive design
+   - Keyboard accessibility
+   - URL sharing
 
