@@ -241,7 +241,7 @@ src/lib/
 
 ---
 
-## Phase 5: Basic UI
+## Phase 5: Basic UI ✅
 
 **Goal:** Functional input forms with real-time visual feedback
 
@@ -256,6 +256,7 @@ When users configure time series inputs, they must see immediate visual confirma
 ```
 src/
   ui/
+    state.ts         # Reactive state management
     inputs.ts        # Form generation and binding
     results.ts       # Display projection table
     preview.ts       # Time series mini-charts
@@ -273,18 +274,47 @@ src/
    - Projection years (start/end)
 
 2. **Results section:**
+   - Summary cards with key metrics
+   - Bar chart for net worth growth
    - Table: year-by-year projection
-   - Net worth trajectory
 
 ### Acceptance Criteria
-- Form inputs update projection in real-time
-- Each time series input shows inline preview chart
-- Table displays correctly
-- Works on desktop browsers
+- Form inputs update projection in real-time ✅
+- Each time series input shows inline preview chart ✅
+- Table displays correctly ✅
+- Works on desktop browsers ✅
 
 ---
 
-## Phase 6: Visualization
+## Phase 6: Advanced UI — Time Series Inputs
+
+**Goal:** Allow users to configure time-varying inputs with full control
+
+### Features
+- Switch input between "constant", "linear growth", and "percentage growth"
+- Composite series: add multiple time segments
+- Multi-component inputs: add/remove named components per category
+- Full access to all time series types from the engine
+
+### Files
+```
+src/ui/
+  state.ts              # Updated with UIComponent model
+  inputs.ts             # Refactored for dynamic components
+  component-editor.ts   # NEW: Single component editor
+  category-section.ts   # NEW: Category with component list
+```
+
+### Acceptance Criteria
+- Users can model career progression (salary growth)
+- Users can model life events (college tuition, retirement income changes)
+- Users can add multiple income sources, spending categories
+- Complex scenarios from README examples are achievable
+- Real-time preview updates for all series types
+
+---
+
+## Phase 7: Visualization
 
 **Goal:** Add charts for visual understanding
 
@@ -298,23 +328,6 @@ src/
 - Charts render correctly
 - Charts update when inputs change
 - Responsive on different screen sizes
-
----
-
-## Phase 7: Advanced UI — Time Series Inputs
-
-**Goal:** Allow users to configure time-varying inputs
-
-### Features
-- Switch input between "constant" and "varies over time"
-- For varying inputs, configure growth type (linear/ratio)
-- Composite series: add multiple time segments
-- Multi-component inputs: add/remove named components
-
-### Acceptance Criteria
-- Users can model career progression (salary growth)
-- Users can model life events (college tuition, retirement income changes)
-- Complex scenarios from README examples are achievable
 
 ---
 
@@ -378,5 +391,7 @@ These may be added in a future "FIRE Features" phase.
 3. ~~Phase 2: Financial Components~~ ✅
 4. ~~Phase 3: Projection Engine~~ ✅
 5. ~~Phase 4: Serialization~~ ✅
-6. **Next: Phase 5 (Basic UI)** — Input forms with real-time visual feedback
+6. ~~Phase 5: Basic UI~~ ✅
+7. **Next: Phase 6 (Advanced Time Series UI)** — Full component configuration
+   - See: `plans/2025-12-27-phase6-advanced-time-series-ui.md`
 
