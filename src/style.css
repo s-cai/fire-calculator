@@ -967,6 +967,7 @@ body {
 .radio-option {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--spacing-sm);
   font-size: 0.85rem;
   color: var(--color-text);
@@ -982,7 +983,8 @@ body {
 }
 
 .radio-label {
-  min-width: 100px;
+  min-width: 80px;
+  flex-shrink: 0;
 }
 
 .radio-input {
@@ -992,7 +994,9 @@ body {
   background: var(--color-bg-input);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .radio-input.disabled {
@@ -1000,8 +1004,15 @@ body {
   pointer-events: none;
 }
 
+.radio-input .input-prefix,
+.radio-input .input-suffix {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  flex-shrink: 0;
+}
+
 .radio-input input {
-  width: 60px;
+  width: 50px;
   padding: var(--spacing-xs);
   font-family: var(--font-mono);
   font-size: 0.85rem;
@@ -1009,6 +1020,7 @@ body {
   background: transparent;
   border: none;
   text-align: right;
+  flex-shrink: 0;
 }
 
 .radio-input input:focus {
