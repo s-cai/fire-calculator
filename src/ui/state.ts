@@ -111,6 +111,7 @@ function createDefaultComponent(category: ComponentCategory, existingCount: numb
 }
 
 function createDefaultSegment(baseYear: number, existingSegments: UISegment[]): UISegment {
+  // Find the end of the last segment, or use baseYear
   const lastEnd = existingSegments.length > 0 
     ? Math.max(...existingSegments.map(s => s.endYear))
     : baseYear;

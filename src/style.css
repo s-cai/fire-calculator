@@ -619,6 +619,7 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
+  overflow: hidden; /* Prevent children from overflowing */
 }
 
 .category-header {
@@ -714,6 +715,7 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
+  overflow: hidden; /* Prevent children from overflowing */
 }
 
 .component-header {
@@ -813,6 +815,22 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-md);
+}
+
+.series-inputs .input-field {
+  min-width: 0; /* Prevent grid blowout */
+  overflow: hidden;
+}
+
+.series-inputs .input-wrapper {
+  width: 100%;
+  max-width: 100%;
+}
+
+.series-inputs .input-wrapper input {
+  min-width: 0;
+  width: 100%;
+  flex: 1;
 }
 
 /* --- Component Preview --- */
