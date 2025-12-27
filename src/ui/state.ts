@@ -93,20 +93,35 @@ const DEFAULT_VALUES: Record<ComponentCategory, { name: string; value: number }>
   investment: { name: 'Investment', value: 20000 },
 };
 
-function createDefaultComponent(category: ComponentCategory, existingCount: number): UIComponent {
+function createDefaultComponent(
+  category: ComponentCategory, 
+  existingCount: number,
+  baseYear: number = 2025,
+  projectionYears: number = 20
+): UIComponent {
   const defaults = DEFAULT_VALUES[category];
   const suffix = existingCount > 0 ? ` ${existingCount + 1}` : '';
   
+  // Always create with a single phase (composite mode)
   return {
     id: generateId(),
     name: `${defaults.name}${suffix}`,
     category,
-    seriesType: 'constant',
+    seriesType: 'composite',
     value: defaults.value,
     startValue: defaults.value,
     yearlyIncrement: 0,
     yearlyGrowthRate: 0.03,
-    segments: [],
+    segments: [{
+      id: generateId(),
+      startYear: baseYear,
+      endYear: baseYear + projectionYears,
+      seriesType: 'constant',
+      value: defaults.value,
+      startValue: defaults.value,
+      yearlyIncrement: 0,
+      yearlyGrowthRate: 0.03,
+    }],
   };
 }
 
@@ -360,41 +375,69 @@ export function convertToUIComponent(c: FinancialComponent): UIComponent {
 
 /**
  * Create initial default components.
+ * All components use composite mode with at least one phase.
  */
-function createDefaultComponents(): UIComponent[] {
+function createDefaultComponents(baseYear: number = 2025, projectionYears: number = 20): UIComponent[] {
   return [
     {
       id: generateId(),
       name: 'Salary',
       category: 'income',
-      seriesType: 'ratio',
+      seriesType: 'composite',
       value: 80000,
       startValue: 80000,
       yearlyIncrement: 0,
       yearlyGrowthRate: 0.03,
-      segments: [],
+      segments: [{
+        id: generateId(),
+        startYear: baseYear,
+        endYear: baseYear + projectionYears,
+        seriesType: 'ratio',
+        value: 80000,
+        startValue: 80000,
+        yearlyIncrement: 0,
+        yearlyGrowthRate: 0.03,
+      }],
     },
     {
       id: generateId(),
       name: 'Living Expenses',
       category: 'spending',
-      seriesType: 'constant',
+      seriesType: 'composite',
       value: 45000,
       startValue: 45000,
       yearlyIncrement: 0,
       yearlyGrowthRate: 0,
-      segments: [],
+      segments: [{
+        id: generateId(),
+        startYear: baseYear,
+        endYear: baseYear + projectionYears,
+        seriesType: 'constant',
+        value: 45000,
+        startValue: 45000,
+        yearlyIncrement: 0,
+        yearlyGrowthRate: 0,
+      }],
     },
     {
       id: generateId(),
       name: 'Retirement Savings',
       category: 'investment',
-      seriesType: 'constant',
+      seriesType: 'composite',
       value: 20000,
       startValue: 20000,
       yearlyIncrement: 0,
       yearlyGrowthRate: 0,
-      segments: [],
+      segments: [{
+        id: generateId(),
+        startYear: baseYear,
+        endYear: baseYear + projectionYears,
+        seriesType: 'constant',
+        value: 20000,
+        startValue: 20000,
+        yearlyIncrement: 0,
+        yearlyGrowthRate: 0,
+      }],
     },
   ];
 }
@@ -404,13 +447,14 @@ function createDefaultComponents(): UIComponent[] {
  */
 export function createState(initial?: Partial<UIState>): StateManager {
   const currentYear = new Date().getFullYear();
+  const defaultProjectionYears = 20;
   
   let state: UIState = {
     baseYear: currentYear,
-    projectionYears: 20,
+    projectionYears: defaultProjectionYears,
     initialNetWorth: 50000,
     investmentReturnRate: 0.07,
-    components: createDefaultComponents(),
+    components: createDefaultComponents(currentYear, defaultProjectionYears),
     isStale: false,
     plan: { baseYear: currentYear, components: [] },
     projection: [],
@@ -488,7 +532,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
     
     addComponent(category: ComponentCategory): void {
       const existingCount = state.components.filter(c => c.category === category).length;
-      const newComponent = createDefaultComponent(category, existingCount);
+      const newComponent = createDefaultComponent(category, existingCount, state.baseYear, state.projectionYears);
       state.components = [...state.components, newComponent];
       state.isStale = true;
       notifyAll();

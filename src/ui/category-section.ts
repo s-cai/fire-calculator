@@ -3,20 +3,20 @@
  * 
  * Groups components by category with add/remove controls.
  * Uses explicit recalculate model - no reactive input handlers.
- * Sparkline previews update in real-time for immediate feedback.
+ * Preview charts update in real-time for immediate feedback.
  */
 
 import { ComponentCategory } from '../lib/components';
-import { UIComponent, getComponentsByCategory, UIState, StateManager, SeriesType, getComponentSeries } from './state';
+import { UIComponent, getComponentsByCategory, UIState, StateManager, getComponentSeries } from './state';
 import { renderComponentEditor } from './component-editor';
 import { totalByCategory } from '../lib/components';
 import { formatCurrency, renderTimeSeriesPreview } from './preview';
-import { constant, linear, ratio, TimeSeries } from '../lib/timeseries';
+import { constant, linear, ratio, composite, TimeSeries } from '../lib/timeseries';
 
 const CATEGORY_CONFIG: Record<ComponentCategory, { title: string; icon: string; addLabel: string }> = {
-  income: { title: 'Income', icon: '💰', addLabel: '+ Add Income Source' },
-  spending: { title: 'Spending', icon: '💸', addLabel: '+ Add Expense' },
-  investment: { title: 'Investment', icon: '📈', addLabel: '+ Add Investment' },
+  income: { title: 'Income', icon: '💰', addLabel: '+ New Income Source' },
+  spending: { title: 'Spending', icon: '💸', addLabel: '+ New Expense' },
+  investment: { title: 'Investment', icon: '📈', addLabel: '+ New Investment' },
 };
 
 /**
@@ -92,25 +92,16 @@ export function setupCategoryListeners(
     });
   });
   
-  // Series type buttons (structural change - shows different inputs)
-  container.querySelectorAll<HTMLButtonElement>('.series-type-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const componentId = btn.dataset.componentId!;
-      const seriesType = btn.dataset.seriesType as SeriesType;
-      stateManager.updateComponentType(componentId, seriesType);
-    });
-  });
-  
-  // Add segment buttons (structural change)
-  container.querySelectorAll<HTMLButtonElement>('.add-segment-btn').forEach(btn => {
+  // Add phase buttons (structural change)
+  container.querySelectorAll<HTMLButtonElement>('.add-phase-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const componentId = btn.dataset.componentId!;
       stateManager.addSegment(componentId);
     });
   });
   
-  // Delete segment buttons (structural change)
-  container.querySelectorAll<HTMLButtonElement>('.delete-segment-btn').forEach(btn => {
+  // Delete phase buttons (structural change)
+  container.querySelectorAll<HTMLButtonElement>('.delete-phase-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const componentId = btn.dataset.componentId!;
       const segmentId = btn.dataset.segmentId!;
@@ -118,22 +109,32 @@ export function setupCategoryListeners(
     });
   });
   
-  // Segment type buttons (structural change - shows different inputs)
-  container.querySelectorAll<HTMLButtonElement>('.segment-type-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const componentId = btn.dataset.componentId!;
-      const segmentId = btn.dataset.segmentId!;
-      const seriesType = btn.dataset.segmentType as 'constant' | 'linear' | 'ratio';
-      stateManager.updateSegmentType(componentId, segmentId, seriesType);
+  // Increase checkbox - toggle between constant and ratio (structural change)
+  container.querySelectorAll<HTMLInputElement>('.increase-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      const componentId = checkbox.dataset.componentId!;
+      const segmentId = checkbox.dataset.segmentId!;
+      const newType = checkbox.checked ? 'ratio' : 'constant';
+      stateManager.updateSegmentType(componentId, segmentId, newType);
     });
   });
   
-  // All text/number inputs - mark state as stale and update preview
-  container.querySelectorAll<HTMLInputElement>('.component-input, .segment-input, .component-name-input').forEach(input => {
+  // Increase type radio buttons - switch between ratio and linear (structural change)
+  container.querySelectorAll<HTMLInputElement>('.phase-input[data-field="increaseType"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const componentId = radio.dataset.componentId!;
+      const segmentId = radio.dataset.segmentId!;
+      const newType = radio.value as 'ratio' | 'linear';
+      stateManager.updateSegmentType(componentId, segmentId, newType);
+    });
+  });
+  
+  // All value inputs - mark state as stale and update preview
+  container.querySelectorAll<HTMLInputElement>('.phase-input:not(.increase-checkbox):not([data-field="increaseType"]), .component-name-input').forEach(input => {
     input.addEventListener('input', () => {
       stateManager.markStale();
       
-      // Update sparkline preview in real-time
+      // Update preview in real-time
       const componentId = input.dataset.componentId;
       if (componentId) {
         updateComponentPreview(container, componentId, stateManager);
@@ -143,7 +144,7 @@ export function setupCategoryListeners(
 }
 
 /**
- * Update the sparkline preview for a component based on current DOM values.
+ * Update the preview chart for a component based on current DOM values.
  */
 function updateComponentPreview(
   container: HTMLElement,
@@ -160,10 +161,9 @@ function updateComponentPreview(
   const previewContainer = card.querySelector('.component-preview');
   if (!previewContainer) return;
   
-  // Read current values from DOM
-  const series = buildSeriesFromDOM(card, component);
-  const previewYears = Math.min(state.projectionYears, 15);
-  const preview = renderTimeSeriesPreview(series, state.baseYear, previewYears);
+  // Read current values from DOM and build series
+  const series = buildSeriesFromDOM(card, component, state.baseYear, state.projectionYears);
+  const preview = renderTimeSeriesPreview(series, state.baseYear, state.projectionYears);
   
   previewContainer.innerHTML = preview;
 }
@@ -171,25 +171,55 @@ function updateComponentPreview(
 /**
  * Build a TimeSeries from current DOM input values.
  */
-function buildSeriesFromDOM(card: Element, component: UIComponent): TimeSeries {
-  const getValue = (field: string): number => {
-    const input = card.querySelector<HTMLInputElement>(`.component-input[data-field="${field}"]`);
-    if (!input) return 0;
-    const isPercent = input.dataset.isPercent === 'true';
-    let value = parseFloat(input.value) || 0;
-    if (isPercent) value = value / 100;
-    return value;
-  };
+function buildSeriesFromDOM(
+  card: Element, 
+  component: UIComponent,
+  baseYear: number,
+  projectionYears: number
+): TimeSeries {
+  const phaseCards = card.querySelectorAll('.phase-card');
   
-  switch (component.seriesType) {
-    case 'constant':
-      return constant(getValue('value'));
-    case 'linear':
-      return linear(getValue('startValue'), getValue('yearlyIncrement'));
-    case 'ratio':
-      return ratio(getValue('startValue'), getValue('yearlyGrowthRate'));
-    case 'composite':
-      // For composite, just use the state-based series (too complex to build from DOM)
-      return getComponentSeries(component);
+  if (phaseCards.length === 0) {
+    return constant(0);
   }
+  
+  const segments: Array<{ series: TimeSeries; startYear: number; endYear: number }> = [];
+  
+  phaseCards.forEach((phaseCard) => {
+    const segmentId = phaseCard.getAttribute('data-segment-id');
+    const segment = component.segments.find(s => s.id === segmentId);
+    if (!segment) return;
+    
+    // Read values from this phase card
+    const startYear = parseInt(phaseCard.querySelector<HTMLInputElement>('[data-field="startYear"]')?.value || '0') || baseYear;
+    const endYear = parseInt(phaseCard.querySelector<HTMLInputElement>('[data-field="endYear"]')?.value || '0') || baseYear + projectionYears;
+    const baseAmount = parseFloat(phaseCard.querySelector<HTMLInputElement>('[data-field="baseAmount"]')?.value || '0') || 0;
+    const hasIncrease = (phaseCard.querySelector<HTMLInputElement>('.increase-checkbox') as HTMLInputElement)?.checked || false;
+    
+    let series: TimeSeries;
+    
+    if (!hasIncrease) {
+      series = constant(baseAmount);
+    } else {
+      // Check which radio is selected
+      const ratioRadio = phaseCard.querySelector<HTMLInputElement>('[data-field="increaseType"][value="ratio"]');
+      const isRatio = ratioRadio?.checked ?? true;
+      
+      if (isRatio) {
+        const growthRate = parseFloat(phaseCard.querySelector<HTMLInputElement>('[data-field="yearlyGrowthRate"]')?.value || '0') / 100 || 0;
+        series = ratio(baseAmount, growthRate);
+      } else {
+        const increment = parseFloat(phaseCard.querySelector<HTMLInputElement>('[data-field="yearlyIncrement"]')?.value || '0') || 0;
+        series = linear(baseAmount, increment);
+      }
+    }
+    
+    segments.push({ series, startYear, endYear });
+  });
+  
+  if (segments.length === 1) {
+    return segments[0].series;
+  }
+  
+  return composite(segments);
 }
