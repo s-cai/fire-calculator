@@ -12,7 +12,7 @@ This plan prioritizes:
 2. **Math correctness before UI** — TDD approach for financial calculations
 3. **Incremental complexity** — each phase builds on the previous
 
-## Phase 0: Testing Infrastructure
+## Phase 0: Testing Infrastructure ✅
 
 **Goal:** Set up unit testing before writing any business logic
 
@@ -32,7 +32,7 @@ npm install -D vitest
 
 ---
 
-## Phase 1: Time Series Engine
+## Phase 1: Time Series Engine ✅
 
 **Goal:** Build the mathematical foundation for time-varying inputs
 
