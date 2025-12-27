@@ -6,7 +6,7 @@ A financial projection tool — a static webpage for modeling income, spending, 
 
 ## Current Status
 
-🚧 **Project Phase:** Basic UI Complete
+🚧 **Project Phase:** Advanced Time Series UI Complete
 
 - ✅ Vite + TypeScript + Vitest setup
 - ✅ Time series engine (constant, linear, ratio, composite patterns)
@@ -16,13 +16,13 @@ A financial projection tool — a static webpage for modeling income, spending, 
 - ✅ 4 example scenarios
 - ✅ 81 unit tests passing
 - ✅ **Phase 5 Complete:** Basic UI with real-time visual feedback
-  - Input form for financial plan parameters
-  - Inline sparkline previews for time series
-  - Summary cards with key metrics
-  - Bar chart for net worth growth
-  - Year-by-year projection table
-  - Load example scenarios with one click
-- **Next:** Phase 6 (Full Chart Visualizations) — see [Implementation Roadmap](ROADMAP.md)
+- ✅ **Phase 6 Complete:** Advanced Time Series UI
+  - Full control over time series types (Fixed/Linear/Growth %/Segments)
+  - Multiple named components per category
+  - Composite series with editable year ranges
+  - Add/remove components and segments dynamically
+  - Real-time sparkline previews for all series types
+- **Next:** Phase 7 (Full Chart Visualizations) — see [Implementation Roadmap](ROADMAP.md)
 
 📐 **Architecture:** See [DESIGN.md](DESIGN.md) for internal logic overview
 
@@ -153,6 +153,6 @@ index.html                # HTML shell
 
 ## Known Limitations
 
-- MVP uses simplified inputs (single values, not full time series configuration)
-- Advanced time series editing UI planned for Phase 7
+- No chart library yet (basic bar chart only) — planned for Phase 7
 - Mobile responsiveness planned for Phase 8
+- No persistence/sharing UI yet — planned for Phase 8
