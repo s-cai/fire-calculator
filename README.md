@@ -10,7 +10,7 @@ A financial independence / retire early (FIRE) calculator — a static webpage f
 - Development guidelines established in `.cursor/rules/`
 - Feature requirements documented (see below)
 - Vite + TypeScript setup complete
-- **Next:** Create implementation roadmap
+- **Next:** Begin Phase 0 of [Implementation Roadmap](ROADMAP.md)
 
 ## Tech Stack
 
