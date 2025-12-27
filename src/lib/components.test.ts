@@ -4,8 +4,7 @@ import {
   netCashFlow, 
   aggregateByYear, 
   component, 
-  plan,
-  FinancialPlan 
+  plan 
 } from './components';
 import { constant, linear, ratio } from './timeseries';
 

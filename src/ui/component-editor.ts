@@ -6,7 +6,7 @@
  */
 
 import { UIComponent, UISegment, getComponentSeries } from './state';
-import { renderTimeSeriesPreview, formatCurrency } from './preview';
+import { renderTimeSeriesPreview } from './preview';
 
 /**
  * Determine if a segment has annual increase configured.
@@ -38,7 +38,7 @@ function getBaseAmount(segment: UISegment): number {
 function renderPhaseEditor(
   segment: UISegment,
   componentId: string,
-  index: number,
+  _index: number,
   totalPhases: number
 ): string {
   const hasIncrease = hasAnnualIncrease(segment);

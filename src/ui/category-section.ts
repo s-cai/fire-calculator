@@ -7,7 +7,7 @@
  */
 
 import { ComponentCategory } from '../lib/components';
-import { UIComponent, getComponentsByCategory, UIState, StateManager, getComponentSeries } from './state';
+import { UIComponent, getComponentsByCategory, UIState, StateManager } from './state';
 import { renderComponentEditor } from './component-editor';
 import { totalByCategory } from '../lib/components';
 import { formatCurrency, renderTimeSeriesPreview } from './preview';
