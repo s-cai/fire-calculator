@@ -415,22 +415,33 @@ body {
 
 .chart-bar-container {
   position: relative;
-  display: flex;
-  align-items: flex-end;
   height: 100%;
   padding: 0 1px;
 }
 
 .chart-bar {
-  width: 100%;
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 0;
   background: linear-gradient(180deg, var(--color-fire) 0%, var(--color-ember) 100%);
   border-radius: 2px 2px 0 0;
   min-height: 2px;
-  transition: height 0.3s ease;
+  transition: height 0.3s ease, bottom 0.3s ease, top 0.3s ease;
 }
 
 .chart-bar.negative {
-  background: var(--color-danger);
+  background: linear-gradient(0deg, var(--color-danger) 0%, #f87171 100%);
+  border-radius: 0 0 2px 2px;
+}
+
+.chart-baseline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-text-dim);
+  z-index: 1;
 }
 
 .chart-label {
@@ -545,6 +556,54 @@ body {
   text-align: center;
   padding: var(--spacing-xl);
   color: var(--color-text-dim);
+}
+
+/* --- Stale Indicator --- */
+.stale-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background: linear-gradient(135deg, rgba(255, 186, 8, 0.15) 0%, rgba(255, 107, 53, 0.1) 100%);
+  border: 1px solid var(--color-gold);
+  border-radius: var(--radius-md);
+}
+
+.stale-message {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gold);
+}
+
+.recalculate-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-bg);
+  background: linear-gradient(135deg, var(--color-fire) 0%, var(--color-ember) 100%);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.recalculate-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.recalculate-btn:active {
+  transform: translateY(0);
+}
+
+/* Stale state - fade results */
+.results-container.is-stale .results-content {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 /* --- Category Sections --- */
@@ -914,8 +973,21 @@ body {
 
 .basic-params .input-group-content {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: var(--spacing-md);
+}
+
+.basic-params .input-field {
+  min-width: 0; /* Prevent grid blowout */
+}
+
+.basic-params .input-wrapper {
+  width: 100%;
+}
+
+.basic-params .input-wrapper input {
+  width: 100%;
+  min-width: 60px;
 }
 
 @media (max-width: 400px) {

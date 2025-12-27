@@ -397,6 +397,24 @@ The core calculation logic is unchanged, so rollback is safe.
 
 ---
 
+## Design Decision: Explicit Recalculate
+
+**Problem:** Reactive input handlers cause re-renders on every keystroke, making inputs lose focus and interrupting typing.
+
+**Solution:** Explicit recalculate model:
+- Inputs have no reactive handlers — users type freely
+- Results panel shows a "stale" indicator when inputs are touched
+- User clicks "Recalculate" button to read all inputs and update projection
+- Clear separation between input editing and result computation
+
+**Benefits:**
+- No complex debouncing or blur handling
+- No re-renders while typing
+- Clear user control over when to compute
+- Simpler implementation and better UX for a financial calculator
+
+---
+
 ## Migration Notes
 
 The state model is changing significantly. On first load after this update:
@@ -410,7 +428,7 @@ The state model is changing significantly. On first load after this update:
 1. **Segment year pickers:** Free-form input or constrained to projection range?
    - Recommendation: Free-form, but warn if outside projection range
 
-2. **Maximum components per category?**
+2. **Maximum components pe`r category?**
    - Recommendation: No hard limit, but UI may get unwieldy with 10+
 
 3. **Segment overlap handling?**

@@ -38,9 +38,13 @@ function init() {
   renderForm(inputsContainer, stateManager);
   renderResults(resultsContainer, stateManager);
   
-  // Re-render on state changes
-  stateManager.onChange(() => {
+  // Re-render form only on structural changes (add/delete, type changes, load example)
+  stateManager.onFormChange(() => {
     renderForm(inputsContainer, stateManager);
+  });
+  
+  // Re-render results on any change (stale, recalculate, structural)
+  stateManager.onResultsChange(() => {
     renderResults(resultsContainer, stateManager);
   });
 }

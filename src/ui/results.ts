@@ -131,24 +131,43 @@ function renderProjectionTable(projection: YearlyProjection[]): string {
 
 /**
  * Render the net worth chart (simple bar visualization).
+ * Handles both positive and negative values with a baseline.
  */
 function renderNetWorthChart(projection: YearlyProjection[]): string {
   if (projection.length === 0) {
     return '';
   }
   
-  const maxNetWorth = Math.max(...projection.map(p => p.netWorth));
+  const values = projection.map(p => p.netWorth);
+  const maxVal = Math.max(...values);
+  const minVal = Math.min(...values);
+  
+  // Calculate the range and baseline position
+  const range = maxVal - minVal || 1; // Prevent division by zero
+  const hasNegative = minVal < 0;
+  const hasPositive = maxVal > 0;
+  
+  // Calculate baseline position (where 0 sits) as percentage from bottom
+  let baselinePercent = 0;
+  if (hasNegative && hasPositive) {
+    baselinePercent = (Math.abs(minVal) / range) * 100;
+  } else if (hasNegative) {
+    baselinePercent = 100; // All negative, baseline at top
+  }
+  // else all positive, baseline at bottom (0)
   
   const bars = projection.map((p, i) => {
-    const height = maxNetWorth > 0 ? (p.netWorth / maxNetWorth) * 100 : 0;
     const width = 100 / projection.length;
     const isNegative = p.netWorth < 0;
+    
+    // Calculate height as percentage of total range
+    const heightPercent = (Math.abs(p.netWorth) / range) * 100;
     
     return `
       <div class="chart-bar-container" style="width: ${width}%">
         <div 
           class="chart-bar ${isNegative ? 'negative' : ''}" 
-          style="height: ${Math.abs(height)}%"
+          style="height: ${heightPercent}%; ${isNegative ? 'bottom: auto; top: ' + (100 - baselinePercent) + '%;' : 'bottom: ' + baselinePercent + '%;'}"
           title="${p.year}: ${formatCurrency(p.netWorth)}"
         ></div>
         ${i % 5 === 0 || i === projection.length - 1 ? `<span class="chart-label">${p.year}</span>` : ''}
@@ -156,16 +175,40 @@ function renderNetWorthChart(projection: YearlyProjection[]): string {
     `;
   }).join('');
   
+  // Show baseline if we have both positive and negative
+  const baseline = hasNegative && hasPositive 
+    ? `<div class="chart-baseline" style="bottom: ${baselinePercent}%"></div>` 
+    : '';
+  
   return `
     <div class="chart-section">
       <h3>Net Worth Growth</h3>
       <div class="bar-chart">
+        ${baseline}
         ${bars}
       </div>
       <div class="chart-legend">
-        <span class="legend-start">${formatCurrency(0)}</span>
-        <span class="legend-end">${formatCurrency(maxNetWorth)}</span>
+        <span class="legend-start">${formatCurrency(minVal)}</span>
+        <span class="legend-end">${formatCurrency(maxVal)}</span>
       </div>
+    </div>
+  `;
+}
+
+/**
+ * Render the stale indicator banner.
+ */
+function renderStaleBanner(isStale: boolean): string {
+  if (!isStale) {
+    return '';
+  }
+  
+  return `
+    <div class="stale-banner">
+      <span class="stale-message">📝 Inputs changed</span>
+      <button type="button" class="recalculate-btn">
+        Recalculate
+      </button>
     </div>
   `;
 }
@@ -177,18 +220,30 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
   const state = stateManager.get();
   
   const html = `
-    <div class="results-container">
+    <div class="results-container ${state.isStale ? 'is-stale' : ''}">
       <div class="results-header">
         <h2>Projection Results</h2>
         <span class="results-subtitle">${state.baseYear} – ${state.baseYear + state.projectionYears - 1}</span>
       </div>
       
-      ${renderSummary(state.projection, state.initialNetWorth)}
-      ${renderNetWorthChart(state.projection)}
-      ${renderProjectionTable(state.projection)}
+      ${renderStaleBanner(state.isStale)}
+      
+      <div class="results-content">
+        ${renderSummary(state.projection, state.initialNetWorth)}
+        ${renderNetWorthChart(state.projection)}
+        ${renderProjectionTable(state.projection)}
+      </div>
     </div>
   `;
   
   container.innerHTML = html;
+  
+  // Wire up recalculate button
+  const recalcBtn = container.querySelector<HTMLButtonElement>('.recalculate-btn');
+  if (recalcBtn) {
+    recalcBtn.addEventListener('click', () => {
+      stateManager.recalculate();
+    });
+  }
 }
 

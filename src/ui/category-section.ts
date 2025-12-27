@@ -2,10 +2,11 @@
  * Category Section
  * 
  * Groups components by category with add/remove controls.
+ * Uses explicit recalculate model - no reactive input handlers.
  */
 
 import { ComponentCategory } from '../lib/components';
-import { UIComponent, getComponentsByCategory, UIState, StateManager } from './state';
+import { UIComponent, getComponentsByCategory, UIState, StateManager, SeriesType } from './state';
 import { renderComponentEditor } from './component-editor';
 import { totalByCategory } from '../lib/components';
 import { formatCurrency } from './preview';
@@ -67,12 +68,13 @@ export function renderCategorySection(
 
 /**
  * Setup event listeners for a category section.
+ * Only structural changes trigger re-renders. Value inputs mark state as stale.
  */
 export function setupCategoryListeners(
   container: HTMLElement,
   stateManager: StateManager
 ): void {
-  // Add component buttons
+  // Add component buttons (structural change)
   container.querySelectorAll<HTMLButtonElement>('.add-component-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const category = btn.dataset.category as ComponentCategory;
@@ -80,7 +82,7 @@ export function setupCategoryListeners(
     });
   });
   
-  // Delete component buttons
+  // Delete component buttons (structural change)
   container.querySelectorAll<HTMLButtonElement>('.delete-component-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const componentId = btn.dataset.componentId!;
@@ -88,38 +90,16 @@ export function setupCategoryListeners(
     });
   });
   
-  // Component name inputs
-  container.querySelectorAll<HTMLInputElement>('.component-name-input').forEach(input => {
-    input.addEventListener('input', () => {
-      const componentId = input.dataset.componentId!;
-      stateManager.updateComponent(componentId, { name: input.value });
-    });
-  });
-  
-  // Series type buttons
+  // Series type buttons (structural change - shows different inputs)
   container.querySelectorAll<HTMLButtonElement>('.series-type-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const componentId = btn.dataset.componentId!;
-      const seriesType = btn.dataset.seriesType as UIComponent['seriesType'];
-      stateManager.updateComponent(componentId, { seriesType });
+      const seriesType = btn.dataset.seriesType as SeriesType;
+      stateManager.updateComponentType(componentId, seriesType);
     });
   });
   
-  // Component inputs (value, startValue, etc.)
-  container.querySelectorAll<HTMLInputElement>('.component-input').forEach(input => {
-    input.addEventListener('input', () => {
-      const componentId = input.dataset.componentId!;
-      const field = input.dataset.field as keyof UIComponent;
-      const isPercent = input.dataset.isPercent === 'true';
-      let value = parseFloat(input.value) || 0;
-      if (isPercent) {
-        value = value / 100;
-      }
-      stateManager.updateComponent(componentId, { [field]: value });
-    });
-  });
-  
-  // Add segment buttons
+  // Add segment buttons (structural change)
   container.querySelectorAll<HTMLButtonElement>('.add-segment-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const componentId = btn.dataset.componentId!;
@@ -127,7 +107,7 @@ export function setupCategoryListeners(
     });
   });
   
-  // Delete segment buttons
+  // Delete segment buttons (structural change)
   container.querySelectorAll<HTMLButtonElement>('.delete-segment-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const componentId = btn.dataset.componentId!;
@@ -136,29 +116,20 @@ export function setupCategoryListeners(
     });
   });
   
-  // Segment type buttons
+  // Segment type buttons (structural change - shows different inputs)
   container.querySelectorAll<HTMLButtonElement>('.segment-type-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const componentId = btn.dataset.componentId!;
       const segmentId = btn.dataset.segmentId!;
       const seriesType = btn.dataset.segmentType as 'constant' | 'linear' | 'ratio';
-      stateManager.updateSegment(componentId, segmentId, { seriesType });
+      stateManager.updateSegmentType(componentId, segmentId, seriesType);
     });
   });
   
-  // Segment inputs
-  container.querySelectorAll<HTMLInputElement>('.segment-input').forEach(input => {
+  // All text/number inputs - mark state as stale on change (not re-render)
+  container.querySelectorAll<HTMLInputElement>('.component-input, .segment-input, .component-name-input').forEach(input => {
     input.addEventListener('input', () => {
-      const componentId = input.dataset.componentId!;
-      const segmentId = input.dataset.segmentId!;
-      const field = input.dataset.field!;
-      const isPercent = input.dataset.isPercent === 'true';
-      let value = parseFloat(input.value) || 0;
-      if (isPercent) {
-        value = value / 100;
-      }
-      stateManager.updateSegment(componentId, segmentId, { [field]: value });
+      stateManager.markStale();
     });
   });
 }
-

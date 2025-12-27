@@ -2,6 +2,7 @@
  * Input Form Component
  * 
  * Form for configuring financial plan parameters.
+ * Uses explicit recalculate model - no reactive input handlers.
  */
 
 import { StateManager, convertToUIComponent } from './state';
@@ -117,25 +118,16 @@ export function renderForm(container: HTMLElement, stateManager: StateManager): 
 }
 
 /**
- * Setup basic parameter input listeners.
+ * Setup basic parameter input listeners - only mark stale, don't re-render.
  */
 function setupBasicParamListeners(container: HTMLElement, stateManager: StateManager): void {
-  const inputMappings: Array<{ id: string; key: keyof ReturnType<StateManager['get']>; isPercent?: boolean }> = [
-    { id: 'baseYear', key: 'baseYear' },
-    { id: 'projectionYears', key: 'projectionYears' },
-    { id: 'initialNetWorth', key: 'initialNetWorth' },
-    { id: 'investmentReturnRate', key: 'investmentReturnRate', isPercent: true },
-  ];
+  const inputIds = ['baseYear', 'projectionYears', 'initialNetWorth', 'investmentReturnRate'];
   
-  inputMappings.forEach(({ id, key, isPercent }) => {
+  inputIds.forEach(id => {
     const input = container.querySelector<HTMLInputElement>(`#${id}`);
     if (input) {
       input.addEventListener('input', () => {
-        let value = parseFloat(input.value) || 0;
-        if (isPercent) {
-          value = value / 100;
-        }
-        stateManager.set({ [key]: value });
+        stateManager.markStale();
       });
     }
   });
@@ -168,8 +160,6 @@ function loadExample(example: ExampleScenario, stateManager: StateManager): void
   // Convert all components to UI format
   const components = plan.components.map(c => convertToUIComponent(c));
   
-  stateManager.set({
-    baseYear: plan.baseYear,
-    components,
-  });
+  // Load and immediately recalculate
+  stateManager.loadComponents(plan.baseYear, components);
 }

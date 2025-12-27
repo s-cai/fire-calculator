@@ -1,7 +1,8 @@
 /**
  * UI State Management
  * 
- * Component-based reactive state for the FIRE calculator.
+ * Explicit recalculate model - inputs don't trigger re-renders.
+ * User clicks "Recalculate" to update projection results.
  */
 
 import { FinancialPlan, FinancialComponent, ComponentCategory } from '../lib/components';
@@ -47,6 +48,9 @@ export interface UIState {
   // Full component list
   components: UIComponent[];
   
+  // Staleness tracking
+  isStale: boolean;
+  
   // Computed
   plan: FinancialPlan;
   projection: YearlyProjection[];
@@ -56,14 +60,23 @@ type Listener = () => void;
 
 export interface StateManager {
   get(): UIState;
-  set(partial: Partial<UIState>): void;
-  updateComponent(id: string, updates: Partial<UIComponent>): void;
+  markStale(): void;
+  recalculate(): void;
+  
+  // Structural changes (trigger immediate re-render)
   addComponent(category: ComponentCategory): void;
   deleteComponent(id: string): void;
-  updateSegment(componentId: string, segmentId: string, updates: Partial<UISegment>): void;
   addSegment(componentId: string): void;
   deleteSegment(componentId: string, segmentId: string): void;
-  onChange(listener: Listener): () => void;
+  updateComponentType(id: string, seriesType: SeriesType): void;
+  updateSegmentType(componentId: string, segmentId: string, seriesType: 'constant' | 'linear' | 'ratio'): void;
+  
+  // Load example (trigger immediate re-render)
+  loadComponents(baseYear: number, components: UIComponent[]): void;
+  
+  // Listeners
+  onFormChange(listener: Listener): () => void;    // Structural changes only
+  onResultsChange(listener: Listener): () => void; // All changes (stale, recalc, structural)
 }
 
 // --- ID Generation ---
@@ -98,7 +111,6 @@ function createDefaultComponent(category: ComponentCategory, existingCount: numb
 }
 
 function createDefaultSegment(baseYear: number, existingSegments: UISegment[]): UISegment {
-  // Find the end of the last segment, or use baseYear
   const lastEnd = existingSegments.length > 0 
     ? Math.max(...existingSegments.map(s => s.endYear))
     : baseYear;
@@ -176,6 +188,103 @@ function runProjection(state: UIState): YearlyProjection[] {
 }
 
 /**
+ * Read all input values from DOM and update state.
+ */
+function readInputsFromDOM(state: UIState): Partial<UIState> {
+  // Read basic parameters
+  const baseYearInput = document.getElementById('baseYear') as HTMLInputElement | null;
+  const projectionYearsInput = document.getElementById('projectionYears') as HTMLInputElement | null;
+  const initialNetWorthInput = document.getElementById('initialNetWorth') as HTMLInputElement | null;
+  const investmentReturnRateInput = document.getElementById('investmentReturnRate') as HTMLInputElement | null;
+  
+  const updates: Partial<UIState> = {};
+  
+  if (baseYearInput) {
+    updates.baseYear = parseInt(baseYearInput.value) || state.baseYear;
+  }
+  if (projectionYearsInput) {
+    updates.projectionYears = parseInt(projectionYearsInput.value) || state.projectionYears;
+  }
+  if (initialNetWorthInput) {
+    updates.initialNetWorth = parseFloat(initialNetWorthInput.value) || 0;
+  }
+  if (investmentReturnRateInput) {
+    updates.investmentReturnRate = (parseFloat(investmentReturnRateInput.value) || 0) / 100;
+  }
+  
+  // Read component values
+  const updatedComponents = state.components.map(component => {
+    const updatedComponent = { ...component };
+    
+    // Component name
+    const nameInput = document.querySelector(`[data-component-id="${component.id}"][data-field="name"]`) as HTMLInputElement | null;
+    if (nameInput) {
+      updatedComponent.name = nameInput.value || component.name;
+    }
+    
+    // Component value fields based on series type
+    const valueInput = document.querySelector(`.component-input[data-component-id="${component.id}"][data-field="value"]`) as HTMLInputElement | null;
+    const startValueInput = document.querySelector(`.component-input[data-component-id="${component.id}"][data-field="startValue"]`) as HTMLInputElement | null;
+    const yearlyIncrementInput = document.querySelector(`.component-input[data-component-id="${component.id}"][data-field="yearlyIncrement"]`) as HTMLInputElement | null;
+    const yearlyGrowthRateInput = document.querySelector(`.component-input[data-component-id="${component.id}"][data-field="yearlyGrowthRate"]`) as HTMLInputElement | null;
+    
+    if (valueInput) {
+      updatedComponent.value = parseFloat(valueInput.value) || 0;
+    }
+    if (startValueInput) {
+      updatedComponent.startValue = parseFloat(startValueInput.value) || 0;
+    }
+    if (yearlyIncrementInput) {
+      updatedComponent.yearlyIncrement = parseFloat(yearlyIncrementInput.value) || 0;
+    }
+    if (yearlyGrowthRateInput) {
+      updatedComponent.yearlyGrowthRate = (parseFloat(yearlyGrowthRateInput.value) || 0) / 100;
+    }
+    
+    // Read segment values for composite series
+    if (component.seriesType === 'composite') {
+      updatedComponent.segments = component.segments.map(segment => {
+        const updatedSegment = { ...segment };
+        
+        const startYearInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="startYear"]`) as HTMLInputElement | null;
+        const endYearInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="endYear"]`) as HTMLInputElement | null;
+        const segValueInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="value"]`) as HTMLInputElement | null;
+        const segStartValueInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="startValue"]`) as HTMLInputElement | null;
+        const segYearlyIncrementInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="yearlyIncrement"]`) as HTMLInputElement | null;
+        const segYearlyGrowthRateInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="yearlyGrowthRate"]`) as HTMLInputElement | null;
+        
+        if (startYearInput) {
+          updatedSegment.startYear = parseInt(startYearInput.value) || segment.startYear;
+        }
+        if (endYearInput) {
+          updatedSegment.endYear = parseInt(endYearInput.value) || segment.endYear;
+        }
+        if (segValueInput) {
+          updatedSegment.value = parseFloat(segValueInput.value) || 0;
+        }
+        if (segStartValueInput) {
+          updatedSegment.startValue = parseFloat(segStartValueInput.value) || 0;
+        }
+        if (segYearlyIncrementInput) {
+          updatedSegment.yearlyIncrement = parseFloat(segYearlyIncrementInput.value) || 0;
+        }
+        if (segYearlyGrowthRateInput) {
+          updatedSegment.yearlyGrowthRate = (parseFloat(segYearlyGrowthRateInput.value) || 0) / 100;
+        }
+        
+        return updatedSegment;
+      });
+    }
+    
+    return updatedComponent;
+  });
+  
+  updates.components = updatedComponents;
+  
+  return updates;
+}
+
+/**
  * Convert a FinancialComponent to a UIComponent.
  */
 export function convertToUIComponent(c: FinancialComponent): UIComponent {
@@ -240,7 +349,6 @@ export function convertToUIComponent(c: FinancialComponent): UIComponent {
           segBase.yearlyGrowthRate = s.yearlyGrowthRate;
           segBase.value = s.startValue;
         }
-        // Note: nested composite not supported in UI
         return segBase;
       });
       break;
@@ -291,18 +399,18 @@ function createDefaultComponents(): UIComponent[] {
 }
 
 /**
- * Create a reactive state manager.
+ * Create a state manager with explicit recalculate model.
  */
 export function createState(initial?: Partial<UIState>): StateManager {
   const currentYear = new Date().getFullYear();
   
-  // Default values
   let state: UIState = {
     baseYear: currentYear,
     projectionYears: 20,
     initialNetWorth: 50000,
     investmentReturnRate: 0.07,
     components: createDefaultComponents(),
+    isStale: false,
     plan: { baseYear: currentYear, components: [] },
     projection: [],
     ...initial,
@@ -312,16 +420,27 @@ export function createState(initial?: Partial<UIState>): StateManager {
   state.plan = buildPlan(state);
   state.projection = runProjection(state);
   
-  const listeners: Set<Listener> = new Set();
+  const formListeners: Set<Listener> = new Set();
+  const resultsListeners: Set<Listener> = new Set();
   
-  function notify() {
-    listeners.forEach(listener => listener());
+  function notifyForm() {
+    formListeners.forEach(listener => listener());
+  }
+  
+  function notifyResults() {
+    resultsListeners.forEach(listener => listener());
+  }
+  
+  function notifyAll() {
+    notifyForm();
+    notifyResults();
   }
   
   function rebuild() {
     state.plan = buildPlan(state);
     state.projection = runProjection(state);
-    notify();
+    state.isStale = false;
+    notifyAll();
   }
   
   return {
@@ -329,41 +448,55 @@ export function createState(initial?: Partial<UIState>): StateManager {
       return state;
     },
     
-    set(partial: Partial<UIState>): void {
-      state = { ...state, ...partial };
+    markStale(): void {
+      if (!state.isStale) {
+        state.isStale = true;
+        notifyResults(); // Only update results panel, not form
+      }
+    },
+    
+    recalculate(): void {
+      // Read all values from DOM
+      const updates = readInputsFromDOM(state);
+      state = { ...state, ...updates };
       rebuild();
     },
     
-    updateComponent(id: string, updates: Partial<UIComponent>): void {
+    updateComponentType(id: string, seriesType: SeriesType): void {
       state.components = state.components.map(c => 
-        c.id === id ? { ...c, ...updates } : c
+        c.id === id ? { ...c, seriesType } : c
       );
-      rebuild();
+      // Re-render form to show new inputs, but mark stale
+      state.isStale = true;
+      notify();
+    },
+    
+    updateSegmentType(componentId: string, segmentId: string, seriesType: 'constant' | 'linear' | 'ratio'): void {
+      state.components = state.components.map(c => {
+        if (c.id !== componentId) return c;
+        return {
+          ...c,
+          segments: c.segments.map(s => 
+            s.id === segmentId ? { ...s, seriesType } : s
+          ),
+        };
+      });
+      state.isStale = true;
+      notify();
     },
     
     addComponent(category: ComponentCategory): void {
       const existingCount = state.components.filter(c => c.category === category).length;
       const newComponent = createDefaultComponent(category, existingCount);
       state.components = [...state.components, newComponent];
-      rebuild();
+      state.isStale = true;
+      notify();
     },
     
     deleteComponent(id: string): void {
       state.components = state.components.filter(c => c.id !== id);
-      rebuild();
-    },
-    
-    updateSegment(componentId: string, segmentId: string, updates: Partial<UISegment>): void {
-      state.components = state.components.map(c => {
-        if (c.id !== componentId) return c;
-        return {
-          ...c,
-          segments: c.segments.map(s => 
-            s.id === segmentId ? { ...s, ...updates } : s
-          ),
-        };
-      });
-      rebuild();
+      state.isStale = true;
+      notify();
     },
     
     addSegment(componentId: string): void {
@@ -375,7 +508,8 @@ export function createState(initial?: Partial<UIState>): StateManager {
           segments: [...c.segments, newSegment],
         };
       });
-      rebuild();
+      state.isStale = true;
+      notify();
     },
     
     deleteSegment(componentId: string, segmentId: string): void {
@@ -386,12 +520,24 @@ export function createState(initial?: Partial<UIState>): StateManager {
           segments: c.segments.filter(s => s.id !== segmentId),
         };
       });
-      rebuild();
+      state.isStale = true;
+      notify();
     },
     
-    onChange(listener: Listener): () => void {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
+    loadComponents(baseYear: number, components: UIComponent[]): void {
+      state.baseYear = baseYear;
+      state.components = components;
+      rebuild(); // Immediately recalculate when loading example
+    },
+    
+    onFormChange(listener: Listener): () => void {
+      formListeners.add(listener);
+      return () => formListeners.delete(listener);
+    },
+    
+    onResultsChange(listener: Listener): () => void {
+      resultsListeners.add(listener);
+      return () => resultsListeners.delete(listener);
     },
   };
 }
