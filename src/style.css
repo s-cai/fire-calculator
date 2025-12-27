@@ -686,22 +686,24 @@ body {
 
 .add-component-btn {
   width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-md);
   font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--color-text-muted);
-  background: transparent;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-sm);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.15s ease;
+  text-align: left;
 }
 
 .add-component-btn:hover {
   color: var(--color-fire);
   border-color: var(--color-fire);
-  background: rgba(255, 107, 53, 0.05);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-sm);
 }
 
 /* --- Component Cards --- */

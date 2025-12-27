@@ -200,7 +200,7 @@ function renderPhasesList(component: UIComponent): string {
         class="add-phase-btn"
         data-component-id="${component.id}"
       >
-        + One more phase
+        + Extend time range
       </button>
     </div>
   `;
