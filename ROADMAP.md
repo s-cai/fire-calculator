@@ -159,7 +159,7 @@ function aggregateByYear(
 
 ---
 
-## Phase 3: Projection Engine
+## Phase 3: Projection Engine ✅
 
 **Goal:** Simulate net worth over time, detect FIRE milestone
 
