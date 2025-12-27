@@ -145,7 +145,7 @@ export function createNetWorthChart(
     options: {
       ...commonOptions,
       plugins: {
-        tooltip: commonOptions.plugins.tooltip,
+        tooltip: commonOptions.plugins.tooltip as any,
         legend: { display: false },
       },
     },
@@ -201,7 +201,7 @@ export function createCashFlowChart(
     options: {
       ...commonOptions,
       plugins: {
-        tooltip: commonOptions.plugins.tooltip,
+        tooltip: commonOptions.plugins.tooltip as any,
         legend: {
           display: true,
           position: 'top' as const,
