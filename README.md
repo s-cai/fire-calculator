@@ -6,7 +6,7 @@ A financial projection tool — a static webpage for modeling income, spending, 
 
 ## Current Status
 
-🚧 **Project Phase:** Core Engine + Serialization Complete
+🚧 **Project Phase:** Basic UI Complete
 
 - ✅ Vite + TypeScript + Vitest setup
 - ✅ Time series engine (constant, linear, ratio, composite patterns)
@@ -15,7 +15,14 @@ A financial projection tool — a static webpage for modeling income, spending, 
 - ✅ Serialization (JSON + URL encoding with lz-string compression)
 - ✅ 4 example scenarios
 - ✅ 81 unit tests passing
-- **Next:** Phase 5 (Basic UI) — see [Implementation Roadmap](ROADMAP.md)
+- ✅ **Phase 5 Complete:** Basic UI with real-time visual feedback
+  - Input form for financial plan parameters
+  - Inline sparkline previews for time series
+  - Summary cards with key metrics
+  - Bar chart for net worth growth
+  - Year-by-year projection table
+  - Load example scenarios with one click
+- **Next:** Phase 6 (Full Chart Visualizations) — see [Implementation Roadmap](ROADMAP.md)
 
 📐 **Architecture:** See [DESIGN.md](DESIGN.md) for internal logic overview
 
@@ -26,24 +33,24 @@ A financial projection tool — a static webpage for modeling income, spending, 
 - **Build:** Vite (compiles TS → JS, outputs static files)
 - **Hosting:** GitHub Pages
 
-## Planned Features
+## Features
 
-### 1. Real-Time Visual Feedback
+### Real-Time Visual Feedback
 
 **Key UX principle:** When configuring time series inputs, users see immediate visual confirmation of what they entered. Example: entering "salary $80k with 3% growth" shows a mini-chart of projected values right next to the input.
 
-### 2. Progressive Complexity Interface
+### Progressive Complexity Interface
 
 The tool starts with a minimal, approachable interface but reveals advanced configuration as needed. Users can go from "quick estimate" to "detailed projection" without switching tools.
 
-### 3. Configurable Input Categories
+### Configurable Input Categories
 
 The core input categories are:
 - **Income** — Salary, side hustles, passive income, Social Security, pensions
 - **Spending** — Living expenses, discretionary, one-time large purchases
 - **Investments** — Contributions, expected returns
 
-### 4. Time Series Inputs (Key Feature)
+### Time Series Inputs (Key Feature)
 
 Each input can vary over time using flexible patterns:
 
@@ -56,7 +63,7 @@ Each input can vary over time using flexible patterns:
 
 This enables modeling of realistic career progressions, retirement phases, and life events.
 
-### 5. Multi-Component Inputs
+### Multi-Component Inputs
 
 Users can break down categories into multiple named components for clarity:
 
@@ -70,19 +77,20 @@ Users can break down categories into multiple named components for clarity:
 - Spouse income: $60k for 10 years
 - Social Security: $24k/year starting at age 67
 
-### 6. Visualization
+### Visualization
 
 Charts and graphs for:
-- Net worth over time
-- Income vs. spending trajectory
-- Individual time series previews
+- Net worth over time (bar chart)
+- Summary metrics (final net worth, savings rate, etc.)
+- Individual time series previews (sparklines)
 
-### 7. Gallery of Pre-Populated Examples (Later Stage)
+### Example Scenarios
 
-Demo scenarios with pre-filled inputs:
-- High savings rate early retirement
-- Career change scenarios
-- Single vs. dual income households
+Pre-built scenarios with pre-filled inputs:
+- **High Saver Professional** — Software engineer with aggressive savings
+- **Dual Income Household** — Two professionals with combined finances
+- **Career Change** — Mid-career transition with salary changes
+- **Variable Income** — Freelancer with growing income and major purchases
 
 ## Deferred Features
 
@@ -122,8 +130,29 @@ npm run build
 npm run preview
 ```
 
+## Project Structure
+
+```
+src/
+  lib/                    # Pure logic (calculation engine)
+    timeseries.ts         # Time series types & evaluation
+    components.ts         # Financial components & plan
+    projection.ts         # Net worth projection
+    serialization.ts      # JSON & URL encoding
+    examples.ts           # Pre-built scenarios
+    *.test.ts             # Unit tests
+  ui/                     # UI components
+    state.ts              # Reactive state management
+    inputs.ts             # Form rendering
+    results.ts            # Projection display
+    preview.ts            # Sparkline mini-charts
+  main.ts                 # Entry point
+  style.css               # Styling
+index.html                # HTML shell
+```
+
 ## Known Limitations
 
-- UI is placeholder only — calculation engine works but no interface yet
-- Visualization strategy not finalized
-- No persistence (save/load) yet
+- MVP uses simplified inputs (single values, not full time series configuration)
+- Advanced time series editing UI planned for Phase 7
+- Mobile responsiveness planned for Phase 8
