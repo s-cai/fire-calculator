@@ -191,9 +191,18 @@ function initializeCharts(projection: YearlyProjection[]): void {
 /**
  * Render the stale indicator banner.
  */
-function renderStaleBanner(isStale: boolean): string {
+function renderStaleBanner(isStale: boolean, showProjection: boolean): string {
   if (!isStale) {
     return '';
+  }
+  
+  // Different message when projection is hidden
+  if (!showProjection) {
+    return `
+      <div class="stale-banner stale-banner--hidden">
+        <span class="stale-message">📝 Inputs changed</span>
+      </div>
+    `;
   }
   
   return `
@@ -207,32 +216,57 @@ function renderStaleBanner(isStale: boolean): string {
 }
 
 /**
+ * Render placeholder when projection is hidden.
+ */
+function renderProjectionPlaceholder(): string {
+  return `
+    <div class="projection-placeholder">
+      <p class="placeholder-message">📊 Projection hidden</p>
+      <p class="placeholder-hint">Use the "Show Projection" button above to view your results</p>
+    </div>
+  `;
+}
+
+/**
  * Render the complete results display.
  */
 export function renderResults(container: HTMLElement, stateManager: StateManager): void {
   const state = stateManager.get();
   
+  // Show placeholder when projection is hidden (mobile)
+  const resultsContent = state.showProjection ? `
+    <div class="results-content">
+      ${renderSummary(state.projection, state.initialNetWorth)}
+      ${renderChartContainers()}
+      ${renderProjectionTable(state.projection)}
+    </div>
+  ` : renderProjectionPlaceholder();
+  
   const html = `
-    <div class="results-container ${state.isStale ? 'is-stale' : ''}">
+    <div class="results-container ${state.isStale ? 'is-stale' : ''} ${!state.showProjection ? 'is-hidden' : ''}">
       <div class="results-header">
         <h2>Projection Results</h2>
         <span class="results-subtitle">${state.baseYear} – ${state.baseYear + state.projectionYears - 1}</span>
       </div>
       
-      ${renderStaleBanner(state.isStale)}
+      ${renderStaleBanner(state.isStale, state.showProjection)}
       
-      <div class="results-content">
-        ${renderSummary(state.projection, state.initialNetWorth)}
-        ${renderChartContainers()}
-        ${renderProjectionTable(state.projection)}
-      </div>
+      ${resultsContent}
     </div>
   `;
   
   container.innerHTML = html;
   
-  // Initialize charts after DOM is updated
-  initializeCharts(state.projection);
+  // Only initialize charts when projection is visible
+  if (state.showProjection) {
+    initializeCharts(state.projection);
+  } else {
+    // Destroy charts when hidden to free resources
+    destroyChart(netWorthChart);
+    destroyChart(cashFlowChart);
+    netWorthChart = null;
+    cashFlowChart = null;
+  }
   
   // Wire up recalculate button
   const recalcBtn = container.querySelector<HTMLButtonElement>('.recalculate-btn');

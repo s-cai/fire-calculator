@@ -31,8 +31,9 @@ function init() {
   const inputsContainer = document.getElementById('inputs')!;
   const resultsContainer = document.getElementById('results')!;
   
-  // Create state manager
-  const stateManager = createState();
+  // Create state manager - hide projection on mobile initially
+  const isMobile = window.innerWidth <= 768;
+  const stateManager = createState({ showProjection: !isMobile });
   
   // Initial render
   renderForm(inputsContainer, stateManager);
@@ -47,6 +48,15 @@ function init() {
   stateManager.onResultsChange(() => {
     renderResults(resultsContainer, stateManager);
   });
+  
+  // Auto-show projection when resizing to desktop
+  const mediaQuery = window.matchMedia('(min-width: 769px)');
+  const handleResize = () => {
+    if (mediaQuery.matches && !stateManager.get().showProjection) {
+      stateManager.setProjectionVisibility(true);
+    }
+  };
+  mediaQuery.addEventListener('change', handleResize);
 }
 
 // Start the app

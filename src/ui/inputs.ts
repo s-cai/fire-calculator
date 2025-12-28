@@ -92,6 +92,16 @@ function renderBasicParameters(state: ReturnType<StateManager['get']>): string {
 export function renderForm(container: HTMLElement, stateManager: StateManager): void {
   const state = stateManager.get();
   
+  // Show "Show projection" banner on mobile when projection is hidden
+  const projectionBanner = state.showProjection ? '' : `
+    <div class="show-projection-banner">
+      <p>Ready to see your projection?</p>
+      <button type="button" class="show-projection-btn">
+        📊 Show Projection
+      </button>
+    </div>
+  `;
+  
   const html = `
     <div class="form-container">
       <div class="form-header">
@@ -106,6 +116,8 @@ export function renderForm(container: HTMLElement, stateManager: StateManager): 
         ${renderCategorySection('spending', state, stateManager)}
         ${renderCategorySection('investment', state, stateManager)}
       </div>
+      
+      ${projectionBanner}
     </div>
   `;
   
@@ -115,6 +127,15 @@ export function renderForm(container: HTMLElement, stateManager: StateManager): 
   setupBasicParamListeners(container, stateManager);
   setupExampleListeners(container, stateManager);
   setupCategoryListeners(container, stateManager);
+  
+  // Wire up show projection button
+  const showBtn = container.querySelector<HTMLButtonElement>('.show-projection-btn');
+  if (showBtn) {
+    showBtn.addEventListener('click', () => {
+      stateManager.recalculate(); // Also recalculate to apply any input changes
+      stateManager.setProjectionVisibility(true);
+    });
+  }
 }
 
 /**

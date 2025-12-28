@@ -51,6 +51,9 @@ export interface UIState {
   // Track which categories are in "customized" mode (vs simple mode)
   customizedCategories: Set<ComponentCategory>;
   
+  // Projection visibility (mobile gating)
+  showProjection: boolean;
+  
   // Staleness tracking
   isStale: boolean;
   
@@ -87,6 +90,9 @@ export interface StateManager {
   // Listeners
   onFormChange(listener: Listener): () => void;    // Structural changes only
   onResultsChange(listener: Listener): () => void; // All changes (stale, recalc, structural)
+  
+  // Projection visibility (mobile)
+  setProjectionVisibility(visible: boolean): void;
 }
 
 // --- ID Generation ---
@@ -489,6 +495,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
     investmentReturnRate: 0.07,
     components: createDefaultComponents(currentYear, defaultProjectionYears),
     customizedCategories: new Set<ComponentCategory>(),
+    showProjection: true,
     isStale: false,
     plan: { baseYear: currentYear, components: [] },
     projection: [],
@@ -646,6 +653,12 @@ export function createState(initial?: Partial<UIState>): StateManager {
     
     isCustomized(category: ComponentCategory): boolean {
       return state.customizedCategories.has(category);
+    },
+    
+    setProjectionVisibility(visible: boolean): void {
+      if (state.showProjection === visible) return;
+      state.showProjection = visible;
+      notifyAll();
     },
   };
 }
