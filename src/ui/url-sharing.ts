@@ -6,7 +6,6 @@
 
 import { encodeForURL, decodeFromURL, ValidationError } from '../lib/serialization';
 import { FinancialPlan } from '../lib/components';
-import { convertToUIComponent } from './state';
 
 /**
  * Get the current shareable URL for a plan.
