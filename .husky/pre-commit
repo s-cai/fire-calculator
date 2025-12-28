@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Run TypeScript type checking before commit
+npm run typecheck
+
+# If typecheck fails, abort commit
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript errors found. Please fix them before committing."
+  exit 1
+fi
+
+echo "✅ TypeScript check passed"
+
