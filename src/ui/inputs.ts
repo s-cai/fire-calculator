@@ -102,9 +102,9 @@ export function renderForm(container: HTMLElement, stateManager: StateManager): 
       ${renderBasicParameters(state)}
       
       <div class="categories-container">
-        ${renderCategorySection('income', state)}
-        ${renderCategorySection('spending', state)}
-        ${renderCategorySection('investment', state)}
+        ${renderCategorySection('income', state, stateManager)}
+        ${renderCategorySection('spending', state, stateManager)}
+        ${renderCategorySection('investment', state, stateManager)}
       </div>
     </div>
   `;

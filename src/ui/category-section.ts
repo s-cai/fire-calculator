@@ -1,9 +1,9 @@
 /**
  * Category Section
  * 
- * Groups components by category with add/remove controls.
- * Uses explicit recalculate model - no reactive input handlers.
- * Preview charts update in real-time for immediate feedback.
+ * Two-tier UI:
+ * 1. Simple mode (default): Just amount + growth rate
+ * 2. Customized mode: Full component editor with segments
  */
 
 import { ComponentCategory } from '../lib/components';
@@ -20,17 +20,105 @@ const CATEGORY_CONFIG: Record<ComponentCategory, { title: string; icon: string; 
 };
 
 /**
- * Render a category section with all its components.
+ * Get the aggregate amount for simple mode (sum of first segment values).
  */
-export function renderCategorySection(
+function getSimpleAmount(state: UIState, category: ComponentCategory): number {
+  const components = getComponentsByCategory(state, category);
+  return components.reduce((sum, c) => {
+    if (c.segments.length > 0) {
+      return sum + (c.segments[0].value || c.segments[0].startValue || 0);
+    }
+    return sum + (c.value || c.startValue || 0);
+  }, 0);
+}
+
+/**
+ * Get the aggregate growth rate for simple mode (average of first segment rates).
+ */
+function getSimpleGrowthRate(state: UIState, category: ComponentCategory): number {
+  const components = getComponentsByCategory(state, category);
+  if (components.length === 0) return 0.03;
+  
+  let totalRate = 0;
+  let count = 0;
+  
+  components.forEach(c => {
+    if (c.segments.length > 0) {
+      const seg = c.segments[0];
+      if (seg.seriesType === 'ratio') {
+        totalRate += seg.yearlyGrowthRate;
+        count++;
+      } else if (seg.seriesType === 'constant') {
+        // Constant means 0% growth
+        count++;
+      }
+    }
+  });
+  
+  return count > 0 ? totalRate / count : 0.03;
+}
+
+/**
+ * Render simple mode: just amount + growth rate.
+ */
+function renderSimpleView(
+  category: ComponentCategory,
+  state: UIState
+): string {
+  const amount = getSimpleAmount(state, category);
+  const growthRate = getSimpleGrowthRate(state, category);
+  
+  return `
+    <div class="simple-inputs">
+      <div class="simple-input-group">
+        <label>Amount</label>
+        <div class="input-wrapper">
+          <span class="input-prefix">$</span>
+          <input 
+            type="number" 
+            class="simple-input"
+            data-category="${category}"
+            data-field="amount"
+            value="${amount}"
+            step="1000"
+          />
+          <span class="input-suffix">/year</span>
+        </div>
+      </div>
+      <div class="simple-input-group">
+        <label>Annual Growth</label>
+        <div class="input-wrapper">
+          <input 
+            type="number" 
+            class="simple-input"
+            data-category="${category}"
+            data-field="growthRate"
+            value="${(growthRate * 100).toFixed(1)}"
+            step="0.1"
+          />
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+    </div>
+    <button 
+      type="button" 
+      class="customize-btn"
+      data-category="${category}"
+    >
+      Customize...
+    </button>
+  `;
+}
+
+/**
+ * Render customized mode: full component editors.
+ */
+function renderCustomizedView(
   category: ComponentCategory,
   state: UIState
 ): string {
   const config = CATEGORY_CONFIG[category];
   const components = getComponentsByCategory(state, category);
-  
-  // Calculate total for this category at base year
-  const total = totalByCategory(state.plan, category, state.baseYear);
   
   const componentCards = components.map(c => 
     renderComponentEditor(c, state.baseYear, state.projectionYears)
@@ -41,7 +129,49 @@ export function renderCategorySection(
     : '';
   
   return `
-    <div class="category-section" data-category="${category}">
+    <div class="category-components">
+      ${emptyState}
+      ${componentCards}
+    </div>
+    <div class="customize-actions">
+      <button 
+        type="button" 
+        class="add-component-btn"
+        data-category="${category}"
+      >
+        ${config.addLabel}
+      </button>
+      <button 
+        type="button" 
+        class="simplify-btn"
+        data-category="${category}"
+      >
+        ← Back to simple
+      </button>
+    </div>
+  `;
+}
+
+/**
+ * Render a category section with simple or customized view.
+ */
+export function renderCategorySection(
+  category: ComponentCategory,
+  state: UIState,
+  stateManager: StateManager
+): string {
+  const config = CATEGORY_CONFIG[category];
+  const isCustomized = stateManager.isCustomized(category);
+  
+  // Calculate total for this category at base year
+  const total = totalByCategory(state.plan, category, state.baseYear);
+  
+  const content = isCustomized 
+    ? renderCustomizedView(category, state)
+    : renderSimpleView(category, state);
+  
+  return `
+    <div class="category-section ${isCustomized ? 'is-customized' : ''}" data-category="${category}">
       <div class="category-header">
         <div class="category-title">
           <span class="category-icon">${config.icon}</span>
@@ -52,18 +182,7 @@ export function renderCategorySection(
         </div>
       </div>
       
-      <div class="category-components">
-        ${emptyState}
-        ${componentCards}
-      </div>
-      
-      <button 
-        type="button" 
-        class="add-component-btn"
-        data-category="${category}"
-      >
-        ${config.addLabel}
-      </button>
+      ${content}
     </div>
   `;
 }
@@ -158,6 +277,29 @@ export function setupCategoryListeners(
       if (componentId) {
         updateComponentPreview(container, componentId, stateManager);
       }
+    });
+  });
+  
+  // Customize buttons - switch to customized mode
+  container.querySelectorAll<HTMLButtonElement>('.customize-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const category = btn.dataset.category as ComponentCategory;
+      stateManager.toggleCustomized(category);
+    });
+  });
+  
+  // Simplify buttons - switch back to simple mode
+  container.querySelectorAll<HTMLButtonElement>('.simplify-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const category = btn.dataset.category as ComponentCategory;
+      stateManager.toggleCustomized(category);
+    });
+  });
+  
+  // Simple mode inputs - mark stale when changed
+  container.querySelectorAll<HTMLInputElement>('.simple-input').forEach(input => {
+    input.addEventListener('input', () => {
+      stateManager.markStale();
     });
   });
 }

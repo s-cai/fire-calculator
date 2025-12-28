@@ -669,6 +669,109 @@ body {
   color: var(--color-investment);
 }
 
+/* --- Simple Mode View --- */
+.simple-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.simple-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.simple-input-group label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.simple-input-group .input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  gap: var(--spacing-xs);
+}
+
+.simple-input-group input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--spacing-xs) 0;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  text-align: right;
+}
+
+.simple-input-group input:focus {
+  outline: none;
+}
+
+.simple-input-group .input-prefix,
+.simple-input-group .input-suffix {
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+  flex-shrink: 0;
+}
+
+.customize-btn {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+  background: transparent;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.customize-btn:hover {
+  color: var(--color-fire);
+  border-color: var(--color-fire);
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.customize-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.customize-actions .add-component-btn {
+  flex: 1;
+  min-width: 140px;
+}
+
+.simplify-btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.simplify-btn:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
 .category-components {
   display: flex;
   flex-direction: column;

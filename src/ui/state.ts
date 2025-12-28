@@ -48,6 +48,9 @@ export interface UIState {
   // Full component list
   components: UIComponent[];
   
+  // Track which categories are in "customized" mode (vs simple mode)
+  customizedCategories: Set<ComponentCategory>;
+  
   // Staleness tracking
   isStale: boolean;
   
@@ -73,6 +76,10 @@ export interface StateManager {
   
   // Update segment values (for syncing DOM edits before structural changes)
   updateSegmentEndYear(componentId: string, segmentId: string, endYear: number): void;
+  
+  // Toggle simple/customized mode for a category
+  toggleCustomized(category: ComponentCategory): void;
+  isCustomized(category: ComponentCategory): boolean;
   
   // Load example (trigger immediate re-render)
   loadComponents(baseYear: number, components: UIComponent[]): void;
@@ -231,46 +238,70 @@ function readInputsFromDOM(state: UIState): Partial<UIState> {
     updates.investmentReturnRate = (parseFloat(investmentReturnRateInput.value) || 0) / 100;
   }
   
+  // Read simple mode inputs (amount + growthRate per category)
+  const simpleInputs = document.querySelectorAll<HTMLInputElement>('.simple-input');
+  const simpleValues: Record<ComponentCategory, { amount?: number; growthRate?: number }> = {
+    income: {},
+    spending: {},
+    investment: {},
+  };
+  
+  simpleInputs.forEach(input => {
+    const category = input.dataset.category as ComponentCategory;
+    const field = input.dataset.field;
+    if (category && field) {
+      if (field === 'amount') {
+        simpleValues[category].amount = parseFloat(input.value) || 0;
+      } else if (field === 'growthRate') {
+        simpleValues[category].growthRate = (parseFloat(input.value) || 0) / 100;
+      }
+    }
+  });
+  
   // Read component values
   const updatedComponents = state.components.map(component => {
     const updatedComponent = { ...component };
+    const category = component.category;
     
+    // Check if this category is in simple mode and has simple inputs
+    const simpleData = simpleValues[category];
+    const isSimpleMode = !state.customizedCategories.has(category);
+    
+    if (isSimpleMode && (simpleData.amount !== undefined || simpleData.growthRate !== undefined)) {
+      // Simple mode: apply simple values to first segment
+      if (updatedComponent.segments.length > 0) {
+        const seg = { ...updatedComponent.segments[0] };
+        if (simpleData.amount !== undefined) {
+          seg.value = simpleData.amount;
+          seg.startValue = simpleData.amount;
+        }
+        if (simpleData.growthRate !== undefined) {
+          seg.yearlyGrowthRate = simpleData.growthRate;
+          // If growth rate is non-zero, switch to ratio type
+          seg.seriesType = simpleData.growthRate !== 0 ? 'ratio' : 'constant';
+        }
+        updatedComponent.segments = [seg];
+      }
+      return updatedComponent;
+    }
+    
+    // Customized mode: read from detailed inputs
     // Component name
     const nameInput = document.querySelector(`[data-component-id="${component.id}"][data-field="name"]`) as HTMLInputElement | null;
     if (nameInput) {
       updatedComponent.name = nameInput.value || component.name;
     }
     
-    // Component value fields based on series type
-    const valueInput = document.querySelector(`.component-input[data-component-id="${component.id}"][data-field="value"]`) as HTMLInputElement | null;
-    const startValueInput = document.querySelector(`.component-input[data-component-id="${component.id}"][data-field="startValue"]`) as HTMLInputElement | null;
-    const yearlyIncrementInput = document.querySelector(`.component-input[data-component-id="${component.id}"][data-field="yearlyIncrement"]`) as HTMLInputElement | null;
-    const yearlyGrowthRateInput = document.querySelector(`.component-input[data-component-id="${component.id}"][data-field="yearlyGrowthRate"]`) as HTMLInputElement | null;
-    
-    if (valueInput) {
-      updatedComponent.value = parseFloat(valueInput.value) || 0;
-    }
-    if (startValueInput) {
-      updatedComponent.startValue = parseFloat(startValueInput.value) || 0;
-    }
-    if (yearlyIncrementInput) {
-      updatedComponent.yearlyIncrement = parseFloat(yearlyIncrementInput.value) || 0;
-    }
-    if (yearlyGrowthRateInput) {
-      updatedComponent.yearlyGrowthRate = (parseFloat(yearlyGrowthRateInput.value) || 0) / 100;
-    }
-    
-    // Read segment values for composite series
+    // Read segment values from phase-input elements
     if (component.seriesType === 'composite') {
       updatedComponent.segments = component.segments.map(segment => {
         const updatedSegment = { ...segment };
         
-        const startYearInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="startYear"]`) as HTMLInputElement | null;
-        const endYearInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="endYear"]`) as HTMLInputElement | null;
-        const segValueInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="value"]`) as HTMLInputElement | null;
-        const segStartValueInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="startValue"]`) as HTMLInputElement | null;
-        const segYearlyIncrementInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="yearlyIncrement"]`) as HTMLInputElement | null;
-        const segYearlyGrowthRateInput = document.querySelector(`.segment-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="yearlyGrowthRate"]`) as HTMLInputElement | null;
+        const startYearInput = document.querySelector(`.phase-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="startYear"]`) as HTMLInputElement | null;
+        const endYearInput = document.querySelector(`.phase-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="endYear"]`) as HTMLInputElement | null;
+        const baseAmountInput = document.querySelector(`.phase-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="baseAmount"]`) as HTMLInputElement | null;
+        const growthRateInput = document.querySelector(`.phase-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="yearlyGrowthRate"]`) as HTMLInputElement | null;
+        const incrementInput = document.querySelector(`.phase-input[data-component-id="${component.id}"][data-segment-id="${segment.id}"][data-field="yearlyIncrement"]`) as HTMLInputElement | null;
         
         if (startYearInput) {
           updatedSegment.startYear = parseInt(startYearInput.value) || segment.startYear;
@@ -278,17 +309,16 @@ function readInputsFromDOM(state: UIState): Partial<UIState> {
         if (endYearInput) {
           updatedSegment.endYear = parseInt(endYearInput.value) || segment.endYear;
         }
-        if (segValueInput) {
-          updatedSegment.value = parseFloat(segValueInput.value) || 0;
+        if (baseAmountInput) {
+          const val = parseFloat(baseAmountInput.value) || 0;
+          updatedSegment.value = val;
+          updatedSegment.startValue = val;
         }
-        if (segStartValueInput) {
-          updatedSegment.startValue = parseFloat(segStartValueInput.value) || 0;
+        if (growthRateInput) {
+          updatedSegment.yearlyGrowthRate = (parseFloat(growthRateInput.value) || 0) / 100;
         }
-        if (segYearlyIncrementInput) {
-          updatedSegment.yearlyIncrement = parseFloat(segYearlyIncrementInput.value) || 0;
-        }
-        if (segYearlyGrowthRateInput) {
-          updatedSegment.yearlyGrowthRate = (parseFloat(segYearlyGrowthRateInput.value) || 0) / 100;
+        if (incrementInput) {
+          updatedSegment.yearlyIncrement = parseFloat(incrementInput.value) || 0;
         }
         
         return updatedSegment;
@@ -458,6 +488,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
     initialNetWorth: 50000,
     investmentReturnRate: 0.07,
     components: createDefaultComponents(currentYear, defaultProjectionYears),
+    customizedCategories: new Set<ComponentCategory>(),
     isStale: false,
     plan: { baseYear: currentYear, components: [] },
     projection: [],
@@ -602,6 +633,19 @@ export function createState(initial?: Partial<UIState>): StateManager {
     onResultsChange(listener: Listener): () => void {
       resultsListeners.add(listener);
       return () => resultsListeners.delete(listener);
+    },
+    
+    toggleCustomized(category: ComponentCategory): void {
+      if (state.customizedCategories.has(category)) {
+        state.customizedCategories.delete(category);
+      } else {
+        state.customizedCategories.add(category);
+      }
+      notifyForm(); // Re-render form to switch between simple/full view
+    },
+    
+    isCustomized(category: ComponentCategory): boolean {
+      return state.customizedCategories.has(category);
     },
   };
 }
