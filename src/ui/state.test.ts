@@ -73,7 +73,6 @@ describe('recalculate', () => {
 
   it('updates projection based on current state', () => {
     const stateManager = createState();
-    const initialProjection = stateManager.get().projection;
     
     // In the explicit recalculate model, values are read from DOM
     // For testing, we can verify that recalculate() works with current state
