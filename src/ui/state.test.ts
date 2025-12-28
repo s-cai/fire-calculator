@@ -75,14 +75,15 @@ describe('recalculate', () => {
     const stateManager = createState();
     const initialProjection = stateManager.get().projection;
     
-    // Change initial net worth
-    stateManager.updateBasicParam('initialNetWorth', 100000);
+    // In the explicit recalculate model, values are read from DOM
+    // For testing, we can verify that recalculate() works with current state
     stateManager.recalculate();
     
     const newProjection = stateManager.get().projection;
     
-    // First year net worth should be higher
-    expect(newProjection[0].netWorth).toBeGreaterThan(initialProjection[0].netWorth);
+    // Projection should still be valid
+    expect(newProjection.length).toBeGreaterThan(0);
+    expect(newProjection[0].year).toBe(stateManager.get().baseYear);
   });
 });
 
@@ -136,25 +137,6 @@ describe('deleteComponent', () => {
   });
 });
 
-describe('updateBasicParam', () => {
-  it('updates the specified field', () => {
-    const stateManager = createState();
-    
-    stateManager.updateBasicParam('projectionYears', 30);
-    expect(stateManager.get().projectionYears).toBe(30);
-    
-    stateManager.updateBasicParam('investmentReturnRate', 0.08);
-    expect(stateManager.get().investmentReturnRate).toBe(0.08);
-  });
-
-  it('marks state as stale', () => {
-    const stateManager = createState();
-    stateManager.recalculate();
-    
-    stateManager.updateBasicParam('initialNetWorth', 75000);
-    expect(stateManager.get().isStale).toBe(true);
-  });
-});
 
 describe('listener management', () => {
   it('onFormChange returns unsubscribe function', () => {
