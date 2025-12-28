@@ -286,8 +286,15 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
   const shareBtn = container.querySelector<HTMLButtonElement>('.share-btn');
   if (shareBtn) {
     shareBtn.addEventListener('click', () => {
-      const url = getShareableURL(state.plan);
-      updateURL(state.plan);
+      const extendedPlan = {
+        baseYear: state.baseYear,
+        projectionYears: state.projectionYears,
+        initialNetWorth: state.initialNetWorth,
+        investmentReturnRate: state.investmentReturnRate,
+        components: state.plan.components,
+      };
+      const url = getShareableURL(extendedPlan);
+      updateURL(extendedPlan);
       
       // Copy to clipboard
       navigator.clipboard.writeText(url).then(() => {

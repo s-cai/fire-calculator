@@ -128,6 +128,37 @@ export function validatePlan(data: unknown, path: string = 'plan'): FinancialPla
   return { baseYear: data.baseYear, components };
 }
 
+// --- Extended Plan (includes basic parameters) ---
+
+export interface ExtendedPlan {
+  baseYear: number;
+  projectionYears: number;
+  initialNetWorth: number;
+  investmentReturnRate: number;
+  components: FinancialComponent[];
+}
+
+export function validateExtendedPlan(data: unknown, path: string = 'plan'): ExtendedPlan {
+  if (!isObject(data)) throw new ValidationError('expected object', path);
+  if (!isNumber(data.baseYear)) throw new ValidationError('baseYear must be a number', `${path}.baseYear`);
+  if (!isNumber(data.projectionYears)) throw new ValidationError('projectionYears must be a number', `${path}.projectionYears`);
+  if (!isNumber(data.initialNetWorth)) throw new ValidationError('initialNetWorth must be a number', `${path}.initialNetWorth`);
+  if (!isNumber(data.investmentReturnRate)) throw new ValidationError('investmentReturnRate must be a number', `${path}.investmentReturnRate`);
+  if (!isArray(data.components)) throw new ValidationError('components must be an array', `${path}.components`);
+  
+  const components = data.components.map((comp, i) => 
+    validateComponent(comp, `${path}.components[${i}]`)
+  );
+  
+  return {
+    baseYear: data.baseYear,
+    projectionYears: data.projectionYears,
+    initialNetWorth: data.initialNetWorth,
+    investmentReturnRate: data.investmentReturnRate,
+    components,
+  };
+}
+
 // --- Serialization ---
 
 /**
@@ -172,5 +203,33 @@ export function decodeFromURL(encoded: string): FinancialPlan {
     throw new ValidationError('failed to decompress URL data');
   }
   return deserialize(json);
+}
+
+/**
+ * Encode an extended plan (with basic parameters) for URL sharing.
+ */
+export function encodeExtendedPlanForURL(extendedPlan: ExtendedPlan): string {
+  const json = JSON.stringify(extendedPlan);
+  return compressToEncodedURIComponent(json);
+}
+
+/**
+ * Decode an extended plan from a URL parameter.
+ * Throws ValidationError if the data is invalid.
+ */
+export function decodeExtendedPlanFromURL(encoded: string): ExtendedPlan {
+  const json = decompressFromEncodedURIComponent(encoded);
+  if (!json) {
+    throw new ValidationError('failed to decompress URL data');
+  }
+  
+  let data: unknown;
+  try {
+    data = JSON.parse(json);
+  } catch (e) {
+    throw new ValidationError('invalid JSON');
+  }
+  
+  return validateExtendedPlan(data);
 }
 

@@ -4,24 +4,23 @@
  * Handles encoding/decoding financial plans in URLs for easy sharing.
  */
 
-import { encodeForURL, decodeFromURL, ValidationError } from '../lib/serialization';
-import { FinancialPlan } from '../lib/components';
+import { encodeExtendedPlanForURL, decodeExtendedPlanFromURL, decodeFromURL, ValidationError, ExtendedPlan } from '../lib/serialization';
 
 /**
- * Get the current shareable URL for a plan.
+ * Get the current shareable URL for a plan with all basic parameters.
  */
-export function getShareableURL(plan: FinancialPlan): string {
-  const encoded = encodeForURL(plan);
+export function getShareableURL(extendedPlan: ExtendedPlan): string {
+  const encoded = encodeExtendedPlanForURL(extendedPlan);
   const url = new URL(window.location.href);
   url.searchParams.set('plan', encoded);
   return url.toString();
 }
 
 /**
- * Load a plan from URL parameters.
+ * Load an extended plan from URL parameters.
  * Returns null if no plan parameter or if decoding fails.
  */
-export function loadPlanFromURL(): FinancialPlan | null {
+export function loadPlanFromURL(): ExtendedPlan | null {
   const urlParams = new URLSearchParams(window.location.search);
   const encoded = urlParams.get('plan');
   
@@ -30,11 +29,25 @@ export function loadPlanFromURL(): FinancialPlan | null {
   }
   
   try {
-    return decodeFromURL(encoded);
+    // Try to decode as extended plan first (new format)
+    return decodeExtendedPlanFromURL(encoded);
   } catch (error) {
     if (error instanceof ValidationError) {
-      console.warn('Invalid plan data in URL:', error.message);
-      return null;
+      // If extended plan fails, try legacy format (just FinancialPlan)
+      try {
+        const legacyPlan = decodeFromURL(encoded);
+        // Convert legacy plan to extended plan with defaults
+        return {
+          baseYear: legacyPlan.baseYear,
+          projectionYears: 20, // default
+          initialNetWorth: 50000, // default
+          investmentReturnRate: 0.07, // default
+          components: legacyPlan.components,
+        };
+      } catch (legacyError) {
+        console.warn('Invalid plan data in URL:', error.message);
+        return null;
+      }
     }
     throw error;
   }
@@ -43,8 +56,8 @@ export function loadPlanFromURL(): FinancialPlan | null {
 /**
  * Update the browser URL with the current plan (without page reload).
  */
-export function updateURL(plan: FinancialPlan, replace: boolean = true): void {
-  const url = getShareableURL(plan);
+export function updateURL(extendedPlan: ExtendedPlan, replace: boolean = true): void {
+  const url = getShareableURL(extendedPlan);
   if (replace) {
     window.history.replaceState({}, '', url);
   } else {

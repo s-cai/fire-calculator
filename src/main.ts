@@ -38,10 +38,13 @@ function init() {
   
   let stateManager;
   if (urlPlan) {
-    // Load plan from URL
+    // Load extended plan from URL (includes basic parameters)
     const components = urlPlan.components.map(c => convertToUIComponent(c));
     stateManager = createState({ 
       baseYear: urlPlan.baseYear,
+      projectionYears: urlPlan.projectionYears,
+      initialNetWorth: urlPlan.initialNetWorth,
+      investmentReturnRate: urlPlan.investmentReturnRate,
       showProjection: !isMobile 
     });
     stateManager.loadComponents(urlPlan.baseYear, components);
@@ -65,7 +68,15 @@ function init() {
     
     // Update URL when plan changes (after recalculate)
     if (!stateManager.get().isStale) {
-      updateURL(stateManager.get().plan);
+      const state = stateManager.get();
+      const extendedPlan = {
+        baseYear: state.baseYear,
+        projectionYears: state.projectionYears,
+        initialNetWorth: state.initialNetWorth,
+        investmentReturnRate: state.investmentReturnRate,
+        components: state.plan.components,
+      };
+      updateURL(extendedPlan);
     }
   });
   
