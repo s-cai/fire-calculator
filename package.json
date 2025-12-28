@@ -10,7 +10,9 @@
     "test": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit && vitest run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "husky",
+    "verify-hooks": "node -e \"try{const fs=require('fs');const hooks=['pre-commit','pre-push'];const missing=hooks.filter(h=>!fs.existsSync(`.git/hooks/${h}`));if(missing.length){console.error('❌ Missing hooks:',missing.join(', '));console.log('Run: npm run prepare');process.exit(1);}else{console.log('✅ All hooks installed');}}catch(e){console.error('Error:',e.message);process.exit(1);}\""
   },
   "devDependencies": {
     "@types/lz-string": "^1.3.34",
