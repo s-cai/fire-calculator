@@ -4,9 +4,13 @@ import {
   deserialize,
   encodeForURL,
   decodeFromURL,
+  encodeExtendedPlanForURL,
+  decodeExtendedPlanFromURL,
   validateTimeSeries,
   validatePlan,
+  validateExtendedPlan,
   ValidationError,
+  ExtendedPlan,
 } from './serialization';
 import { constant, linear, ratio, composite } from './timeseries';
 import { component, plan } from './components';
@@ -200,6 +204,98 @@ describe('serialization', () => {
 
     it('throws on invalid encoded data', () => {
       expect(() => decodeFromURL('not-valid-encoded-data')).toThrow(ValidationError);
+    });
+  });
+
+  describe('ExtendedPlan (with basic parameters)', () => {
+    it('validates extended plan with all parameters', () => {
+      const data: ExtendedPlan = {
+        baseYear: 2025,
+        projectionYears: 25,
+        initialNetWorth: 75000,
+        investmentReturnRate: 0.08,
+        components: [
+          { name: 'Salary', category: 'income', series: { type: 'constant', value: 100000 } },
+        ],
+      };
+      const result = validateExtendedPlan(data);
+      expect(result.baseYear).toBe(2025);
+      expect(result.projectionYears).toBe(25);
+      expect(result.initialNetWorth).toBe(75000);
+      expect(result.investmentReturnRate).toBe(0.08);
+      expect(result.components).toHaveLength(1);
+    });
+
+    it('rejects missing basic parameters', () => {
+      const data = {
+        baseYear: 2025,
+        components: [],
+      };
+      expect(() => validateExtendedPlan(data)).toThrow('projectionYears must be a number');
+    });
+
+    it('round-trips extended plan through URL encoding', () => {
+      const extendedPlan: ExtendedPlan = {
+        baseYear: 2025,
+        projectionYears: 30,
+        initialNetWorth: 100000,
+        investmentReturnRate: 0.09,
+        components: [
+          component('Salary', 'income', ratio(100000, 0.03)),
+          component('Rent', 'spending', constant(24000)),
+          component('401k', 'investment', constant(20000)),
+        ],
+      };
+      
+      const encoded = encodeExtendedPlanForURL(extendedPlan);
+      const decoded = decodeExtendedPlanFromURL(encoded);
+      
+      expect(decoded).toEqual(extendedPlan);
+    });
+
+    it('produces URL-safe output for extended plan', () => {
+      const extendedPlan: ExtendedPlan = {
+        baseYear: 2025,
+        projectionYears: 20,
+        initialNetWorth: 50000,
+        investmentReturnRate: 0.07,
+        components: [
+          component('Test', 'income', constant(100)),
+        ],
+      };
+      
+      const encoded = encodeExtendedPlanForURL(extendedPlan);
+      
+      // Should only contain URL-safe characters
+      expect(encoded).toMatch(/^[A-Za-z0-9+/=-]*$/);
+    });
+
+    it('compresses extended plan to reasonable size', () => {
+      const extendedPlan: ExtendedPlan = {
+        baseYear: 2025,
+        projectionYears: 20,
+        initialNetWorth: 50000,
+        investmentReturnRate: 0.07,
+        components: [
+          component('Salary', 'income', ratio(100000, 0.03)),
+          component('Bonus', 'income', constant(10000)),
+          component('Rent', 'spending', constant(24000)),
+          component('Food', 'spending', constant(12000)),
+          component('401k', 'investment', constant(20000)),
+        ],
+      };
+      
+      const json = JSON.stringify(extendedPlan);
+      const encoded = encodeExtendedPlanForURL(extendedPlan);
+      
+      // Encoded should be shorter than raw JSON (compression working)
+      expect(encoded.length).toBeLessThan(json.length);
+      // And reasonably short for a URL
+      expect(encoded.length).toBeLessThan(600);
+    });
+
+    it('throws on invalid encoded extended plan data', () => {
+      expect(() => decodeExtendedPlanFromURL('not-valid-encoded-data')).toThrow(ValidationError);
     });
   });
 });

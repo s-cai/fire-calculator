@@ -223,6 +223,11 @@ function runProjection(state: UIState): YearlyProjection[] {
  * Read all input values from DOM and update state.
  */
 function readInputsFromDOM(state: UIState): Partial<UIState> {
+  // In test environments, document may not exist
+  if (typeof document === 'undefined') {
+    return {};
+  }
+  
   // Read basic parameters
   const baseYearInput = document.getElementById('baseYear') as HTMLInputElement | null;
   const projectionYearsInput = document.getElementById('projectionYears') as HTMLInputElement | null;
