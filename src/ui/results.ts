@@ -5,15 +5,16 @@
  * Uses Chart.js for visualization.
  */
 
-import { Chart } from 'chart.js';
 import { StateManager } from './state';
 import { formatCurrency, formatPercent } from './preview';
 import { YearlyProjection } from '../lib/projection';
 import { createNetWorthChart, createCashFlowChart, destroyChart } from './charts';
+import { getShareableURL, updateURL } from './url-sharing';
 
 // Store chart instances for cleanup
-let netWorthChart: Chart | null = null;
-let cashFlowChart: Chart | null = null;
+type ChartInstance = ReturnType<typeof createNetWorthChart>;
+let netWorthChart: ChartInstance | null = null;
+let cashFlowChart: ChartInstance | null = null;
 
 /**
  * Calculate summary statistics from projection.
@@ -245,8 +246,13 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
   const html = `
     <div class="results-container ${state.isStale ? 'is-stale' : ''} ${!state.showProjection ? 'is-hidden' : ''}">
       <div class="results-header">
-        <h2>Projection Results</h2>
-        <span class="results-subtitle">${state.baseYear} – ${state.baseYear + state.projectionYears - 1}</span>
+        <div>
+          <h2>Projection Results</h2>
+          <span class="results-subtitle">${state.baseYear} – ${state.baseYear + state.projectionYears - 1}</span>
+        </div>
+        <button type="button" class="share-btn" title="Copy shareable URL">
+          🔗 Share
+        </button>
       </div>
       
       ${renderStaleBanner(state.isStale, state.showProjection)}
@@ -273,6 +279,31 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
   if (recalcBtn) {
     recalcBtn.addEventListener('click', () => {
       stateManager.recalculate();
+    });
+  }
+  
+  // Wire up share button
+  const shareBtn = container.querySelector<HTMLButtonElement>('.share-btn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      const url = getShareableURL(state.plan);
+      updateURL(state.plan);
+      
+      // Copy to clipboard
+      navigator.clipboard.writeText(url).then(() => {
+        // Show feedback
+        const originalText = shareBtn.textContent;
+        shareBtn.textContent = '✓ Copied!';
+        shareBtn.classList.add('share-btn--copied');
+        setTimeout(() => {
+          shareBtn.textContent = originalText;
+          shareBtn.classList.remove('share-btn--copied');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy URL:', err);
+        // Fallback: show URL in alert
+        alert(`Share this URL:\n\n${url}`);
+      });
     });
   }
 }

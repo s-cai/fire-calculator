@@ -5,9 +5,10 @@
  */
 
 import './style.css';
-import { createState } from './ui/state';
+import { createState, convertToUIComponent } from './ui/state';
 import { renderForm } from './ui/inputs';
 import { renderResults } from './ui/results';
+import { loadPlanFromURL, updateURL } from './ui/url-sharing';
 
 // Initialize the application
 function init() {
@@ -31,9 +32,23 @@ function init() {
   const inputsContainer = document.getElementById('inputs')!;
   const resultsContainer = document.getElementById('results')!;
   
-  // Create state manager - hide projection on mobile initially
+  // Try to load plan from URL
+  const urlPlan = loadPlanFromURL();
   const isMobile = window.innerWidth <= 768;
-  const stateManager = createState({ showProjection: !isMobile });
+  
+  let stateManager;
+  if (urlPlan) {
+    // Load plan from URL
+    const components = urlPlan.components.map(c => convertToUIComponent(c));
+    stateManager = createState({ 
+      baseYear: urlPlan.baseYear,
+      showProjection: !isMobile 
+    });
+    stateManager.loadComponents(urlPlan.baseYear, components);
+  } else {
+    // Use default state
+    stateManager = createState({ showProjection: !isMobile });
+  }
   
   // Initial render
   renderForm(inputsContainer, stateManager);
@@ -47,6 +62,11 @@ function init() {
   // Re-render results on any change (stale, recalculate, structural)
   stateManager.onResultsChange(() => {
     renderResults(resultsContainer, stateManager);
+    
+    // Update URL when plan changes (after recalculate)
+    if (!stateManager.get().isStale) {
+      updateURL(stateManager.get().plan);
+    }
   });
   
   // Auto-show projection when resizing to desktop
