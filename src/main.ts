@@ -8,7 +8,7 @@ import './style.css';
 import { createState, convertToUIComponent } from './ui/state';
 import { renderForm } from './ui/inputs';
 import { renderResults } from './ui/results';
-import { loadPlanFromURL, updateURL } from './ui/url-sharing';
+import { loadPlanFromURL } from './ui/url-sharing';
 
 // Initialize the application
 function init() {
@@ -65,19 +65,6 @@ function init() {
   // Re-render results on any change (stale, recalculate, structural)
   stateManager.onResultsChange(() => {
     renderResults(resultsContainer, stateManager);
-    
-    // Update URL when plan changes (after recalculate)
-    if (!stateManager.get().isStale) {
-      const state = stateManager.get();
-      const extendedPlan = {
-        baseYear: state.baseYear,
-        projectionYears: state.projectionYears,
-        initialNetWorth: state.initialNetWorth,
-        investmentReturnRate: state.investmentReturnRate,
-        components: state.plan.components,
-      };
-      updateURL(extendedPlan);
-    }
   });
   
   // Auto-show projection when resizing to desktop

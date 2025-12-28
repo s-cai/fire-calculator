@@ -251,7 +251,7 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
           <span class="results-subtitle">${state.baseYear} – ${state.baseYear + state.projectionYears - 1}</span>
         </div>
         <button type="button" class="share-btn" title="Copy shareable URL">
-          🔗 Share
+          🔗 Share this plan
         </button>
       </div>
       
