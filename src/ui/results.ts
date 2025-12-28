@@ -250,9 +250,15 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
           <h2>Projection Results</h2>
           <span class="results-subtitle">${state.baseYear} – ${state.baseYear + state.projectionYears - 1}</span>
         </div>
-        <button type="button" class="share-btn" title="Copy shareable URL">
-          🔗 Share this plan
-        </button>
+        ${state.isStale ? `
+          <button type="button" class="share-btn share-btn--disabled" disabled title="Recalculate to share current plan">
+            🔗 Share this plan
+          </button>
+        ` : `
+          <button type="button" class="share-btn" title="Copy shareable URL">
+            🔗 Share this plan
+          </button>
+        `}
       </div>
       
       ${renderStaleBanner(state.isStale, state.showProjection)}
@@ -282,9 +288,9 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
     });
   }
   
-  // Wire up share button
-  const shareBtn = container.querySelector<HTMLButtonElement>('.share-btn');
-  if (shareBtn) {
+  // Wire up share button (only if not stale)
+  const shareBtn = container.querySelector<HTMLButtonElement>('.share-btn:not(.share-btn--disabled)');
+  if (shareBtn && !state.isStale) {
     shareBtn.addEventListener('click', () => {
       const extendedPlan = {
         baseYear: state.baseYear,
