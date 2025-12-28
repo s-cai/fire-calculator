@@ -71,6 +71,9 @@ export interface StateManager {
   updateComponentType(id: string, seriesType: SeriesType): void;
   updateSegmentType(componentId: string, segmentId: string, seriesType: 'constant' | 'linear' | 'ratio'): void;
   
+  // Update segment values (for syncing DOM edits before structural changes)
+  updateSegmentEndYear(componentId: string, segmentId: string, endYear: number): void;
+  
   // Load example (trigger immediate re-render)
   loadComponents(baseYear: number, components: UIComponent[]): void;
   
@@ -567,6 +570,22 @@ export function createState(initial?: Partial<UIState>): StateManager {
       });
       state.isStale = true;
       notifyAll();
+    },
+    
+    updateSegmentEndYear(componentId: string, segmentId: string, endYear: number): void {
+      // Silently update segment endYear without triggering re-render
+      // This is used to sync DOM edits before structural changes
+      state.components = state.components.map(c => {
+        if (c.id !== componentId) return c;
+        return {
+          ...c,
+          segments: c.segments.map(s => {
+            if (s.id !== segmentId) return s;
+            return { ...s, endYear };
+          }),
+        };
+      });
+      // Don't notify - this is a silent sync before another action
     },
     
     loadComponents(baseYear: number, components: UIComponent[]): void {

@@ -96,6 +96,25 @@ export function setupCategoryListeners(
   container.querySelectorAll<HTMLButtonElement>('.add-phase-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const componentId = btn.dataset.componentId!;
+      
+      // Read the current end year from the DOM (user may have edited it)
+      const componentCard = container.querySelector(`.component-card[data-component-id="${componentId}"]`);
+      if (componentCard) {
+        const phaseCards = componentCard.querySelectorAll('.phase-card');
+        if (phaseCards.length > 0) {
+          const lastPhase = phaseCards[phaseCards.length - 1];
+          const endYearInput = lastPhase.querySelector<HTMLInputElement>('[data-field="endYear"]');
+          if (endYearInput) {
+            const currentEndYear = parseInt(endYearInput.value) || 0;
+            const segmentId = lastPhase.getAttribute('data-segment-id');
+            if (segmentId && currentEndYear > 0) {
+              // Update the state with the current DOM value before adding new segment
+              stateManager.updateSegmentEndYear(componentId, segmentId, currentEndYear);
+            }
+          }
+        }
+      }
+      
       stateManager.addSegment(componentId);
     });
   });
