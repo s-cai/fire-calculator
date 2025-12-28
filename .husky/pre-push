@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Run full build check before push (matches CI)
+echo "🔍 Running build check (matches CI)..."
+npm run build
+
+# If build fails, abort push
+if [ $? -ne 0 ]; then
+  echo "❌ Build failed. Please fix errors before pushing."
+  exit 1
+fi
+
+echo "✅ Build check passed"
+
