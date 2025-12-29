@@ -98,6 +98,7 @@ function renderTableRow(p: YearlyProjection, index: number): string {
       <td class="year-cell">${p.year}</td>
       <td class="money-cell income">${formatCurrency(p.income)}</td>
       <td class="money-cell spending">${formatCurrency(p.spending)}</td>
+      <td class="money-cell investment-returns">${formatCurrency(p.investmentReturns)}</td>
       <td class="money-cell net-worth">${formatCurrency(p.netWorth)}</td>
     </tr>
   `;
@@ -123,6 +124,7 @@ function renderProjectionTable(projection: YearlyProjection[]): string {
               <th>Year</th>
               <th>Income</th>
               <th>Spending</th>
+              <th>Investment Returns</th>
               <th>Net Worth</th>
             </tr>
           </thead>
@@ -173,6 +175,7 @@ function initializeCharts(projection: YearlyProjection[]): void {
   const netWorth = projection.map(p => p.netWorth);
   const income = projection.map(p => p.income);
   const spending = projection.map(p => p.spending);
+  const investmentReturns = projection.map(p => p.investmentReturns);
   
   // Get canvas elements
   const netWorthCanvas = document.getElementById('netWorthChart') as HTMLCanvasElement | null;
@@ -183,7 +186,7 @@ function initializeCharts(projection: YearlyProjection[]): void {
   }
   
   if (cashFlowCanvas) {
-    cashFlowChart = createCashFlowChart(cashFlowCanvas, years, income, spending);
+    cashFlowChart = createCashFlowChart(cashFlowCanvas, years, income, spending, investmentReturns);
   }
 }
 

@@ -34,6 +34,7 @@ const COLORS = {
   ember: '#ff8f5a',
   income: '#22c55e',
   spending: '#ef4444',
+  investmentReturns: '#3b82f6',
   gridLine: '#e5e5e5',
   text: '#64748b',
   textDark: '#1e293b',
@@ -152,13 +153,14 @@ export function createNetWorthChart(
 }
 
 /**
- * Create an income vs spending dual line chart.
+ * Create an income vs spending chart with investment returns.
  */
 export function createCashFlowChart(
   canvas: HTMLCanvasElement,
   years: number[],
   income: number[],
-  spending: number[]
+  spending: number[],
+  investmentReturns: number[]
 ): Chart {
   const ctx = canvas.getContext('2d')!;
   
@@ -192,6 +194,20 @@ export function createCashFlowChart(
           pointRadius: 0,
           pointHoverRadius: 5,
           pointHoverBackgroundColor: COLORS.spending,
+          pointHoverBorderColor: '#fff',
+          pointHoverBorderWidth: 2,
+        },
+        {
+          label: 'Investment Returns',
+          data: investmentReturns,
+          borderColor: COLORS.investmentReturns,
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 2.5,
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: COLORS.investmentReturns,
           pointHoverBorderColor: '#fff',
           pointHoverBorderWidth: 2,
         },

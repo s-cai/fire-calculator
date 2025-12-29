@@ -18,6 +18,7 @@ export interface YearlyProjection {
   year: number;
   income: number;
   spending: number;
+  investmentReturns: number;
   netWorth: number;
 }
 
@@ -42,8 +43,9 @@ export function projectNetWorth(params: ProjectionParams): YearlyProjection[] {
     const income = totalByCategory(plan, 'income', year);
     const spending = totalByCategory(plan, 'spending', year);
     
-    // Apply returns to existing net worth
-    const afterReturns = netWorth * (1 + investmentReturnRate);
+    // Calculate investment returns on existing net worth
+    const investmentReturns = netWorth * investmentReturnRate;
+    const afterReturns = netWorth + investmentReturns;
     
     // Add net cash flow
     const netCashFlow = income - spending;
@@ -55,6 +57,7 @@ export function projectNetWorth(params: ProjectionParams): YearlyProjection[] {
       year,
       income,
       spending,
+      investmentReturns,
       netWorth,
     });
   }
