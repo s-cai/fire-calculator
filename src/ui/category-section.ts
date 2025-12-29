@@ -14,7 +14,7 @@ import { formatCurrency, renderTimeSeriesPreview } from './preview';
 import { constant, linear, ratio, composite, TimeSeries } from '../lib/timeseries';
 
 const CATEGORY_CONFIG: Record<ComponentCategory, { title: string; icon: string; addLabel: string }> = {
-  income: { title: 'Income', icon: '💰', addLabel: '+ New Income Source' },
+  income: { title: 'After-tax income', icon: '💰', addLabel: '+ New Income Source' },
   spending: { title: 'Spending', icon: '💸', addLabel: '+ New Expense' },
 };
 
