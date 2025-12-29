@@ -192,6 +192,36 @@ function buildTimeSeries(component: UIComponent): TimeSeries {
 }
 
 /**
+ * Determine if a category should be shown in customized mode.
+ * A category needs customization if it has:
+ * - Multiple components, OR
+ * - Any component with composite series type, OR
+ * - Any component with multiple segments
+ */
+function shouldBeCustomized(components: UIComponent[], category: ComponentCategory): boolean {
+  const categoryComponents = components.filter(c => c.category === category);
+  
+  // Multiple components always need customization
+  if (categoryComponents.length > 1) {
+    return true;
+  }
+  
+  // Check if any component has complexity
+  for (const component of categoryComponents) {
+    // Composite series type (even with single segment, composite mode needs full editor)
+    if (component.seriesType === 'composite') {
+      return true;
+    }
+    // Multiple segments (indicates time-varying complexity)
+    if (component.segments.length > 1) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
  * Build a FinancialPlan from UI components.
  */
 function buildPlan(state: UIState): FinancialPlan {
@@ -612,6 +642,17 @@ export function createState(initial?: Partial<UIState>): StateManager {
     loadComponents(baseYear: number, components: UIComponent[]): void {
       state.baseYear = baseYear;
       state.components = components;
+      
+      // Automatically mark categories as customized if they have complexity
+      const categories: ComponentCategory[] = ['income', 'spending'];
+      for (const category of categories) {
+        if (shouldBeCustomized(components, category)) {
+          state.customizedCategories.add(category);
+        } else {
+          state.customizedCategories.delete(category);
+        }
+      }
+      
       rebuild(); // Immediately recalculate when loading example
     },
     

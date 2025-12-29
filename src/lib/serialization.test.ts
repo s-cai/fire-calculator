@@ -36,7 +36,7 @@ describe('serialization', () => {
       const data = {
         type: 'composite',
         segments: [
-          { series: { type: 'constant', value: 80000 }, startYear: 2025, endYear: 2030 },
+          { series: { type: 'constant', value: 80000 }, startYear: 2025, endYear: 2029 },
           { series: { type: 'constant', value: 120000 }, startYear: 2030, endYear: 2040 },
         ],
       };
@@ -135,7 +135,7 @@ describe('serialization', () => {
         component('Side gig', 'income', linear(10000, 1000)),
         component('Rent', 'spending', constant(24000)),
         component('Career', 'income', composite([
-          { series: constant(80000), startYear: 2025, endYear: 2030 },
+          { series: constant(80000), startYear: 2025, endYear: 2029 },
           { series: ratio(120000, 0.05), startYear: 2030, endYear: 2040 },
         ])),
       ]);

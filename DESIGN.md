@@ -146,7 +146,7 @@ interface ProjectionParams {
   plan: FinancialPlan;
   initialNetWorth: number;
   startYear: number;
-  endYear: number;           // exclusive
+  endYear: number;           // inclusive
   investmentReturnRate: number; // e.g., 0.07 for 7%
 }
 

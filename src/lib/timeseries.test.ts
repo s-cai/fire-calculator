@@ -94,7 +94,7 @@ describe('timeseries', () => {
   describe('composite series', () => {
     it('returns value from correct segment', () => {
       const series = composite([
-        { series: constant(80000), startYear: 2025, endYear: 2030 },
+        { series: constant(80000), startYear: 2025, endYear: 2029 },
         { series: constant(120000), startYear: 2030, endYear: 2040 },
       ]);
       expect(evaluate(series, 2025, 2025)).toBe(80000);
@@ -108,7 +108,6 @@ describe('timeseries', () => {
         { series: constant(80000), startYear: 2025, endYear: 2028 },
         { series: constant(120000), startYear: 2030, endYear: 2040 },
       ]);
-      expect(evaluate(series, 2028, 2025)).toBe(0);
       expect(evaluate(series, 2029, 2025)).toBe(0);
     });
 
@@ -123,7 +122,7 @@ describe('timeseries', () => {
       const series = composite([
         { series: constant(80000), startYear: 2025, endYear: 2030 },
       ]);
-      expect(evaluate(series, 2030, 2025)).toBe(0);
+      expect(evaluate(series, 2030, 2025)).toBe(80000);
       expect(evaluate(series, 2035, 2025)).toBe(0);
     });
 
@@ -135,7 +134,7 @@ describe('timeseries', () => {
     it('evaluates nested growth series with segment-relative base year', () => {
       // Salary: $80k with 3% raises starting in 2025, then $120k with 5% raises starting in 2030
       const series = composite([
-        { series: ratio(80000, 0.03), startYear: 2025, endYear: 2030 },
+        { series: ratio(80000, 0.03), startYear: 2025, endYear: 2029 },
         { series: ratio(120000, 0.05), startYear: 2030, endYear: 2040 },
       ]);
       
@@ -144,6 +143,9 @@ describe('timeseries', () => {
       
       // 2027: 2 years into first segment → 80000 * 1.03^2
       expect(evaluate(series, 2027, 2025)).toBeCloseTo(84872, 0);
+      
+      // 2029: last year of first segment → 80000 * 1.03^4
+      expect(evaluate(series, 2029, 2025)).toBeCloseTo(90041, 0);
       
       // 2030: first year of second segment → 120000
       expect(evaluate(series, 2030, 2025)).toBe(120000);
@@ -163,15 +165,17 @@ describe('timeseries', () => {
     it('handles nested composite series', () => {
       const inner = composite([
         { series: constant(100), startYear: 2025, endYear: 2027 },
-        { series: constant(200), startYear: 2027, endYear: 2030 },
+        { series: constant(200), startYear: 2028, endYear: 2029 },
       ]);
       const outer = composite([
-        { series: inner, startYear: 2025, endYear: 2030 },
+        { series: inner, startYear: 2025, endYear: 2029 },
         { series: constant(300), startYear: 2030, endYear: 2035 },
       ]);
       
       expect(evaluate(outer, 2026, 2025)).toBe(100);
+      expect(evaluate(outer, 2027, 2025)).toBe(100);
       expect(evaluate(outer, 2028, 2025)).toBe(200);
+      expect(evaluate(outer, 2029, 2025)).toBe(200);
       expect(evaluate(outer, 2032, 2025)).toBe(300);
     });
   });

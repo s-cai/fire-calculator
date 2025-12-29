@@ -74,7 +74,7 @@ interface CompositeSeries {
   segments: Array<{
     series: TimeSeries;
     startYear: number;
-    endYear: number; // exclusive
+    endYear: number; // inclusive
   }>;
 }
 

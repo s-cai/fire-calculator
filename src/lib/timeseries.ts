@@ -30,7 +30,7 @@ export interface CompositeSeries {
   segments: Array<{
     series: TimeSeries;
     startYear: number;
-    endYear: number; // exclusive
+    endYear: number; // inclusive
   }>;
 }
 
@@ -60,7 +60,7 @@ export function evaluate(series: TimeSeries, year: number, baseYear: number): nu
     case 'composite': {
       // Find the segment that contains this year
       for (const segment of series.segments) {
-        if (year >= segment.startYear && year < segment.endYear) {
+        if (year >= segment.startYear && year <= segment.endYear) {
           // Use the segment's startYear as the baseYear for the nested series
           return evaluate(segment.series, year, segment.startYear);
         }

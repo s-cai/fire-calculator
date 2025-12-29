@@ -78,7 +78,7 @@ export const dualIncomeHousehold: ExampleScenario = {
         name: 'Childcare',
         category: 'spending',
         series: composite([
-          { series: constant(24000), startYear: 2025, endYear: 2030 }, // 5 years of childcare
+          { series: constant(24000), startYear: 2025, endYear: 2029 }, // 5 years of childcare (2025-2029 inclusive)
         ]),
       },
     ],
@@ -99,10 +99,10 @@ export const careerChange: ExampleScenario = {
         name: 'Salary',
         category: 'income',
         series: composite([
-          // Current career: $130k with 2% raises for 5 years
-          { series: ratio(130000, 0.02), startYear: 2025, endYear: 2030 },
-          // Gap year (minimal income)
-          { series: constant(20000), startYear: 2030, endYear: 2031 },
+          // Current career: $130k with 2% raises for 5 years (2025-2029 inclusive)
+          { series: ratio(130000, 0.02), startYear: 2025, endYear: 2029 },
+          // Gap year (minimal income) - just 2030
+          { series: constant(20000), startYear: 2030, endYear: 2030 },
           // New career: $80k starting, 5% growth potential
           { series: ratio(80000, 0.05), startYear: 2031, endYear: 2050 },
         ]),
@@ -116,7 +116,7 @@ export const careerChange: ExampleScenario = {
         name: 'Career Transition Costs',
         category: 'spending',
         series: composite([
-          { series: constant(15000), startYear: 2030, endYear: 2031 }, // Training, certification
+          { series: constant(15000), startYear: 2030, endYear: 2030 }, // Training, certification (one-time in 2030)
         ]),
       },
     ],
@@ -147,14 +147,14 @@ export const variableIncome: ExampleScenario = {
         name: 'Home Purchase',
         category: 'spending',
         series: composite([
-          { series: constant(50000), startYear: 2027, endYear: 2028 }, // Down payment
+          { series: constant(50000), startYear: 2027, endYear: 2027 }, // Down payment (one-time in 2027)
         ]),
       },
       {
         name: 'College Fund (Child)',
         category: 'spending',
         series: composite([
-          { series: constant(30000), startYear: 2035, endYear: 2039 }, // 4 years of tuition
+          { series: constant(30000), startYear: 2035, endYear: 2038 }, // 4 years of tuition (2035-2038 inclusive)
         ]),
       },
     ],

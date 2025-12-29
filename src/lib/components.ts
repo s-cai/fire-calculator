@@ -54,7 +54,7 @@ export function netCashFlow(plan: FinancialPlan, year: number): number {
  * 
  * @param plan - The financial plan
  * @param startYear - First year (inclusive)
- * @param endYear - Last year (exclusive)
+ * @param endYear - Last year (exclusive, for range iteration)
  * @returns Array of yearly breakdowns
  */
 export function aggregateByYear(

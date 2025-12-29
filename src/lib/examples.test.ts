@@ -93,7 +93,7 @@ describe('examples', () => {
         investmentReturnRate: 0.07,
       });
       
-      // Childcare costs end in 2030
+      // Childcare costs end in 2029 (2025-2029 inclusive)
       expect(result[4].spending).toBeGreaterThan(result[5].spending); // 2029 vs 2030
     });
 
@@ -106,7 +106,7 @@ describe('examples', () => {
         investmentReturnRate: 0.07,
       });
       
-      // Gap year (2030) should have lowest income
+      // Gap year (2030 only) should have lowest income
       const gapYearIncome = result[5].income; // 2030
       const beforeIncome = result[4].income; // 2029
       const afterIncome = result[6].income; // 2031
@@ -124,10 +124,10 @@ describe('examples', () => {
         investmentReturnRate: 0.07,
       });
       
-      // Home purchase year (2027) should have higher spending
+      // Home purchase year (2027 only) should have higher spending
       expect(result[2].spending).toBeGreaterThan(result[1].spending);
       
-      // College years (2035-2038) should have higher spending
+      // College years (2035-2038 inclusive) should have higher spending
       expect(result[10].spending).toBeGreaterThan(result[9].spending);
     });
   });

@@ -10,7 +10,7 @@ export interface ProjectionParams {
   plan: FinancialPlan;
   initialNetWorth: number;
   startYear: number;
-  endYear: number; // exclusive
+  endYear: number; // exclusive (for projection loop)
   investmentReturnRate: number; // e.g., 0.07 for 7%
 }
 
