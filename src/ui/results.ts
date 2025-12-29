@@ -8,13 +8,16 @@
 import { StateManager } from './state';
 import { formatCurrency, formatPercent } from './preview';
 import { YearlyProjection } from '../lib/projection';
-import { createNetWorthChart, createCashFlowChart, destroyChart } from './charts';
+import { createNetWorthChart, createCashFlowChart, createDecompositionChart, destroyChart } from './charts';
 import { getShareableURL, updateURL } from './url-sharing';
+import { evaluate } from '../lib/timeseries';
 
 // Store chart instances for cleanup
 type ChartInstance = ReturnType<typeof createNetWorthChart>;
 let netWorthChart: ChartInstance | null = null;
 let cashFlowChart: ChartInstance | null = null;
+let incomeDecompChart: ChartInstance | null = null;
+let spendingDecompChart: ChartInstance | null = null;
 
 /**
  * Calculate summary statistics from projection.
@@ -140,7 +143,25 @@ function renderProjectionTable(projection: YearlyProjection[]): string {
 /**
  * Render chart containers (canvas elements).
  */
-function renderChartContainers(): string {
+function renderChartContainers(hasMultipleIncome: boolean, hasMultipleSpending: boolean): string {
+  const incomeDecomp = hasMultipleIncome ? `
+      <div class="chart-container">
+        <h3>Income Decomposition</h3>
+        <div class="chart-wrapper">
+          <canvas id="incomeDecompChart"></canvas>
+        </div>
+      </div>
+  ` : '';
+  
+  const spendingDecomp = hasMultipleSpending ? `
+      <div class="chart-container">
+        <h3>Spending Decomposition</h3>
+        <div class="chart-wrapper">
+          <canvas id="spendingDecompChart"></canvas>
+        </div>
+      </div>
+  ` : '';
+  
   return `
     <div class="charts-section">
       <div class="chart-container">
@@ -155,19 +176,44 @@ function renderChartContainers(): string {
           <canvas id="cashFlowChart"></canvas>
         </div>
       </div>
+      ${incomeDecomp}
+      ${spendingDecomp}
     </div>
   `;
 }
 
 /**
+ * Calculate decomposition data for a category.
+ */
+function calculateDecomposition(
+  plan: { baseYear: number; components: Array<{ name: string; category: string; series: any }> },
+  category: 'income' | 'spending',
+  years: number[]
+): Array<{ name: string; values: number[] }> {
+  const categoryComponents = plan.components.filter(c => c.category === category);
+  
+  return categoryComponents.map(comp => ({
+    name: comp.name,
+    values: years.map(year => evaluate(comp.series, year, plan.baseYear)),
+  }));
+}
+
+/**
  * Initialize Chart.js charts after DOM is ready.
  */
-function initializeCharts(projection: YearlyProjection[]): void {
+function initializeCharts(
+  projection: YearlyProjection[],
+  plan: { baseYear: number; components: Array<{ name: string; category: string; series: any }> }
+): void {
   // Destroy existing charts
   destroyChart(netWorthChart);
   destroyChart(cashFlowChart);
+  destroyChart(incomeDecompChart);
+  destroyChart(spendingDecompChart);
   netWorthChart = null;
   cashFlowChart = null;
+  incomeDecompChart = null;
+  spendingDecompChart = null;
   
   if (projection.length === 0) return;
   
@@ -180,6 +226,8 @@ function initializeCharts(projection: YearlyProjection[]): void {
   // Get canvas elements
   const netWorthCanvas = document.getElementById('netWorthChart') as HTMLCanvasElement | null;
   const cashFlowCanvas = document.getElementById('cashFlowChart') as HTMLCanvasElement | null;
+  const incomeDecompCanvas = document.getElementById('incomeDecompChart') as HTMLCanvasElement | null;
+  const spendingDecompCanvas = document.getElementById('spendingDecompChart') as HTMLCanvasElement | null;
   
   if (netWorthCanvas) {
     netWorthChart = createNetWorthChart(netWorthCanvas, years, netWorth);
@@ -187,6 +235,20 @@ function initializeCharts(projection: YearlyProjection[]): void {
   
   if (cashFlowCanvas) {
     cashFlowChart = createCashFlowChart(cashFlowCanvas, years, income, spending, investmentReturns);
+  }
+  
+  // Initialize decomposition charts if there are multiple components
+  const incomeComponents = plan.components.filter(c => c.category === 'income');
+  const spendingComponents = plan.components.filter(c => c.category === 'spending');
+  
+  if (incomeComponents.length > 1 && incomeDecompCanvas) {
+    const incomeData = calculateDecomposition(plan, 'income', years);
+    incomeDecompChart = createDecompositionChart(incomeDecompCanvas, years, incomeData);
+  }
+  
+  if (spendingComponents.length > 1 && spendingDecompCanvas) {
+    const spendingData = calculateDecomposition(plan, 'spending', years);
+    spendingDecompChart = createDecompositionChart(spendingDecompCanvas, years, spendingData);
   }
 }
 
@@ -235,11 +297,17 @@ function renderProjectionPlaceholder(): string {
 export function renderResults(container: HTMLElement, stateManager: StateManager): void {
   const state = stateManager.get();
   
+  // Check if we have multiple components for decomposition charts
+  const incomeComponents = state.plan.components.filter(c => c.category === 'income');
+  const spendingComponents = state.plan.components.filter(c => c.category === 'spending');
+  const hasMultipleIncome = incomeComponents.length > 1;
+  const hasMultipleSpending = spendingComponents.length > 1;
+  
   // Show placeholder when projection is hidden (mobile)
   const resultsContent = state.showProjection ? `
     <div class="results-content">
       ${renderSummary(state.projection, state.initialNetWorth)}
-      ${renderChartContainers()}
+      ${renderChartContainers(hasMultipleIncome, hasMultipleSpending)}
       ${renderProjectionTable(state.projection)}
     </div>
   ` : renderProjectionPlaceholder();
@@ -272,13 +340,17 @@ export function renderResults(container: HTMLElement, stateManager: StateManager
   
   // Only initialize charts when projection is visible
   if (state.showProjection) {
-    initializeCharts(state.projection);
+    initializeCharts(state.projection, state.plan);
   } else {
     // Destroy charts when hidden to free resources
     destroyChart(netWorthChart);
     destroyChart(cashFlowChart);
+    destroyChart(incomeDecompChart);
+    destroyChart(spendingDecompChart);
     netWorthChart = null;
     cashFlowChart = null;
+    incomeDecompChart = null;
+    spendingDecompChart = null;
   }
   
   // Wire up recalculate button

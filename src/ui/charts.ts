@@ -235,6 +235,77 @@ export function createCashFlowChart(
 }
 
 /**
+ * Create a decomposition chart showing individual components.
+ */
+export function createDecompositionChart(
+  canvas: HTMLCanvasElement,
+  years: number[],
+  componentData: Array<{ name: string; values: number[] }>
+): Chart {
+  const ctx = canvas.getContext('2d')!;
+  
+  // Generate colors for each component (cycling through a palette)
+  const componentColors = [
+    COLORS.income,
+    COLORS.spending,
+    COLORS.investmentReturns,
+    COLORS.fire,
+    COLORS.ember,
+    '#8b5cf6', // purple
+    '#f59e0b', // amber
+    '#10b981', // emerald
+  ];
+  
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: years.map(String),
+      datasets: componentData.map((comp, i) => ({
+        label: comp.name,
+        data: comp.values,
+        borderColor: componentColors[i % componentColors.length],
+        backgroundColor: `rgba(${hexToRgb(componentColors[i % componentColors.length])}, 0.1)`,
+        borderWidth: 2.5,
+        fill: false,
+        tension: 0.3,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: componentColors[i % componentColors.length],
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+      })),
+    },
+    options: {
+      ...commonOptions,
+      plugins: {
+        tooltip: commonOptions.plugins.tooltip as any,
+        legend: {
+          display: true,
+          position: 'top' as const,
+          align: 'end' as const,
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 16,
+            font: { size: 12 },
+            color: COLORS.textDark,
+          },
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Helper to convert hex color to RGB for rgba().
+ */
+function hexToRgb(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return '59, 130, 246'; // fallback to blue
+  return `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`;
+}
+
+/**
  * Safely destroy a chart instance.
  */
 export function destroyChart(chart: Chart | null | undefined): void {
