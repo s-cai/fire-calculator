@@ -573,6 +573,22 @@ export function createState(initial?: Partial<UIState>): StateManager {
     notifyAll();
   }
   
+  /**
+   * Sync current DOM input values to state before structural changes.
+   * This preserves user edits when re-renders are triggered.
+   */
+  function syncDOMToState(): void {
+    const domUpdates = readInputsFromDOM(state);
+    if (domUpdates.components) {
+      state.components = domUpdates.components;
+    }
+    // Also sync basic parameters if they changed
+    if (domUpdates.baseYear !== undefined) state.baseYear = domUpdates.baseYear;
+    if (domUpdates.projectionYears !== undefined) state.projectionYears = domUpdates.projectionYears;
+    if (domUpdates.initialNetWorth !== undefined) state.initialNetWorth = domUpdates.initialNetWorth;
+    if (domUpdates.investmentReturnRate !== undefined) state.investmentReturnRate = domUpdates.investmentReturnRate;
+  }
+  
   return {
     get(): UIState {
       return state;
@@ -593,12 +609,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
     },
     
     updateComponentType(id: string, seriesType: SeriesType): void {
-      // Read current DOM values before structural change to preserve user edits
-      const domUpdates = readInputsFromDOM(state);
-      if (domUpdates.components) {
-        state.components = domUpdates.components;
-      }
-      
+      syncDOMToState();
       state.components = state.components.map(c => 
         c.id === id ? { ...c, seriesType } : c
       );
@@ -608,12 +619,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
     },
     
     updateSegmentType(componentId: string, segmentId: string, seriesType: 'constant' | 'linear' | 'ratio'): void {
-      // Read current DOM values before structural change to preserve user edits
-      const domUpdates = readInputsFromDOM(state);
-      if (domUpdates.components) {
-        state.components = domUpdates.components;
-      }
-      
+      syncDOMToState();
       state.components = state.components.map(c => {
         if (c.id !== componentId) return c;
         return {
@@ -628,12 +634,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
     },
     
     addComponent(category: ComponentCategory): void {
-      // Read current DOM values before structural change to preserve user edits
-      const domUpdates = readInputsFromDOM(state);
-      if (domUpdates.components) {
-        state.components = domUpdates.components;
-      }
-      
+      syncDOMToState();
       const existingCount = state.components.filter(c => c.category === category).length;
       const newComponent = createDefaultComponent(category, existingCount, state.baseYear, state.projectionYears);
       state.components = [...state.components, newComponent];
@@ -642,24 +643,14 @@ export function createState(initial?: Partial<UIState>): StateManager {
     },
     
     deleteComponent(id: string): void {
-      // Read current DOM values before structural change to preserve user edits
-      const domUpdates = readInputsFromDOM(state);
-      if (domUpdates.components) {
-        state.components = domUpdates.components;
-      }
-      
+      syncDOMToState();
       state.components = state.components.filter(c => c.id !== id);
       state.isStale = true;
       notifyAll();
     },
     
     addSegment(componentId: string): void {
-      // Read current DOM values before structural change to preserve user edits
-      const domUpdates = readInputsFromDOM(state);
-      if (domUpdates.components) {
-        state.components = domUpdates.components;
-      }
-      
+      syncDOMToState();
       state.components = state.components.map(c => {
         if (c.id !== componentId) return c;
         const newSegment = createDefaultSegment(state.baseYear, c.segments);
@@ -673,12 +664,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
     },
     
     deleteSegment(componentId: string, segmentId: string): void {
-      // Read current DOM values before structural change to preserve user edits
-      const domUpdates = readInputsFromDOM(state);
-      if (domUpdates.components) {
-        state.components = domUpdates.components;
-      }
-      
+      syncDOMToState();
       state.components = state.components.map(c => {
         if (c.id !== componentId) return c;
         return {
@@ -734,12 +720,7 @@ export function createState(initial?: Partial<UIState>): StateManager {
     },
     
     toggleCustomized(category: ComponentCategory): void {
-      // Read current DOM values before structural change to preserve user edits
-      const domUpdates = readInputsFromDOM(state);
-      if (domUpdates.components) {
-        state.components = domUpdates.components;
-      }
-      
+      syncDOMToState();
       if (state.customizedCategories.has(category)) {
         state.customizedCategories.delete(category);
       } else {
