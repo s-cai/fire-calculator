@@ -112,10 +112,14 @@ function createDefaultComponent(
   category: ComponentCategory, 
   existingCount: number,
   baseYear: number = 2025,
-  projectionYears: number = 20
+  projectionYears: number = 40
 ): UIComponent {
   const defaults = DEFAULT_VALUES[category];
   const suffix = existingCount > 0 ? ` ${existingCount + 1}` : '';
+  
+  // Default growth rates: 3% for income, 3.2% (inflation) for spending
+  const defaultGrowthRate = category === 'spending' ? 0.032 : 0.03;
+  const defaultSeriesType = category === 'spending' ? 'ratio' : 'ratio';
   
   // Always create with a single phase (composite mode)
   return {
@@ -126,16 +130,16 @@ function createDefaultComponent(
     value: defaults.value,
     startValue: defaults.value,
     yearlyIncrement: 0,
-    yearlyGrowthRate: 0.03,
+    yearlyGrowthRate: defaultGrowthRate,
     segments: [{
       id: generateId(),
       startYear: baseYear,
       endYear: baseYear + projectionYears,
-      seriesType: 'constant',
+      seriesType: defaultSeriesType,
       value: defaults.value,
       startValue: defaults.value,
       yearlyIncrement: 0,
-      yearlyGrowthRate: 0.03,
+      yearlyGrowthRate: defaultGrowthRate,
     }],
   };
 }
@@ -506,16 +510,16 @@ function createDefaultComponents(baseYear: number = 2025, projectionYears: numbe
       value: 45000,
       startValue: 45000,
       yearlyIncrement: 0,
-      yearlyGrowthRate: 0,
+      yearlyGrowthRate: 0.032,
       segments: [{
         id: generateId(),
         startYear: baseYear,
         endYear: baseYear + projectionYears,
-        seriesType: 'constant',
+        seriesType: 'ratio',
         value: 45000,
         startValue: 45000,
         yearlyIncrement: 0,
-        yearlyGrowthRate: 0,
+        yearlyGrowthRate: 0.032,
       }],
     },
   ];
@@ -526,7 +530,7 @@ function createDefaultComponents(baseYear: number = 2025, projectionYears: numbe
  */
 export function createState(initial?: Partial<UIState>): StateManager {
   const currentYear = new Date().getFullYear();
-  const defaultProjectionYears = 20;
+  const defaultProjectionYears = 40;
   
   let state: UIState = {
     baseYear: currentYear,
