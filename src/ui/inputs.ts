@@ -114,7 +114,6 @@ export function renderForm(container: HTMLElement, stateManager: StateManager): 
       <div class="categories-container">
         ${renderCategorySection('income', state, stateManager)}
         ${renderCategorySection('spending', state, stateManager)}
-        ${renderCategorySection('investment', state, stateManager)}
       </div>
       
       ${projectionBanner}

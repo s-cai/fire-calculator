@@ -1,12 +1,12 @@
 /**
  * Financial Components
  * 
- * Multi-component income/spending/investment modeling.
+ * Multi-component income/spending modeling.
  */
 
 import { TimeSeries, evaluate } from './timeseries';
 
-export type ComponentCategory = 'income' | 'spending' | 'investment';
+export type ComponentCategory = 'income' | 'spending';
 
 export interface FinancialComponent {
   name: string;
@@ -23,7 +23,6 @@ export interface YearlyBreakdown {
   year: number;
   income: number;
   spending: number;
-  investment: number;
   netCashFlow: number;
 }
 
@@ -43,7 +42,6 @@ export function totalByCategory(
 /**
  * Calculate net cash flow for a given year.
  * Net cash flow = Income - Spending
- * (Investment contributions are separate from this calculation)
  */
 export function netCashFlow(plan: FinancialPlan, year: number): number {
   const income = totalByCategory(plan, 'income', year);
@@ -69,13 +67,11 @@ export function aggregateByYear(
   for (let year = startYear; year < endYear; year++) {
     const income = totalByCategory(plan, 'income', year);
     const spending = totalByCategory(plan, 'spending', year);
-    const investment = totalByCategory(plan, 'investment', year);
     
     results.push({
       year,
       income,
       spending,
-      investment,
       netCashFlow: income - spending,
     });
   }

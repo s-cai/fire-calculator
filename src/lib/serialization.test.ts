@@ -138,7 +138,6 @@ describe('serialization', () => {
           { series: constant(80000), startYear: 2025, endYear: 2030 },
           { series: ratio(120000, 0.05), startYear: 2030, endYear: 2040 },
         ])),
-        component('401k', 'investment', constant(20000)),
       ]);
       
       const json = serialize(p);
@@ -162,7 +161,6 @@ describe('serialization', () => {
       const p = plan(2025, [
         component('Salary', 'income', ratio(100000, 0.03)),
         component('Rent', 'spending', constant(24000)),
-        component('401k', 'investment', constant(20000)),
       ]);
       
       const encoded = encodeForURL(p);
@@ -189,8 +187,6 @@ describe('serialization', () => {
         component('Rent', 'spending', constant(24000)),
         component('Food', 'spending', constant(12000)),
         component('Utilities', 'spending', constant(3000)),
-        component('401k', 'investment', constant(20000)),
-        component('IRA', 'investment', constant(7000)),
       ]);
       
       const json = serialize(p);
@@ -243,7 +239,6 @@ describe('serialization', () => {
         components: [
           component('Salary', 'income', ratio(100000, 0.03)),
           component('Rent', 'spending', constant(24000)),
-          component('401k', 'investment', constant(20000)),
         ],
       };
       
@@ -281,7 +276,6 @@ describe('serialization', () => {
           component('Bonus', 'income', constant(10000)),
           component('Rent', 'spending', constant(24000)),
           component('Food', 'spending', constant(12000)),
-          component('401k', 'investment', constant(20000)),
         ],
       };
       

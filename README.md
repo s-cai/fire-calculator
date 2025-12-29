@@ -53,7 +53,6 @@ The tool starts with a minimal, approachable interface but reveals advanced conf
 The core input categories are:
 - **Income** — Salary, side hustles, passive income, Social Security, pensions
 - **Spending** — Living expenses, discretionary, one-time large purchases
-- **Investments** — Contributions, expected returns
 
 ### Time Series Inputs (Key Feature)
 

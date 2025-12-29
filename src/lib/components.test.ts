@@ -31,18 +31,15 @@ describe('components', () => {
       const p = plan(2025, [
         component('Salary', 'income', constant(100000)),
         component('Rent', 'spending', constant(24000)),
-        component('401k', 'investment', constant(20000)),
       ]);
       expect(totalByCategory(p, 'income', 2025)).toBe(100000);
       expect(totalByCategory(p, 'spending', 2025)).toBe(24000);
-      expect(totalByCategory(p, 'investment', 2025)).toBe(20000);
     });
 
     it('returns 0 for empty plan', () => {
       const p = plan(2025, []);
       expect(totalByCategory(p, 'income', 2025)).toBe(0);
       expect(totalByCategory(p, 'spending', 2025)).toBe(0);
-      expect(totalByCategory(p, 'investment', 2025)).toBe(0);
     });
 
     it('returns 0 when no components match category', () => {
@@ -88,15 +85,6 @@ describe('components', () => {
       expect(netCashFlow(p, 2025)).toBe(-10000);
     });
 
-    it('ignores investment category', () => {
-      const p = plan(2025, [
-        component('Salary', 'income', constant(100000)),
-        component('Living expenses', 'spending', constant(40000)),
-        component('401k', 'investment', constant(30000)),
-      ]);
-      // Net cash flow is income - spending, not considering investments
-      expect(netCashFlow(p, 2025)).toBe(60000);
-    });
 
     it('returns 0 for empty plan', () => {
       const p = plan(2025, []);
@@ -139,7 +127,6 @@ describe('components', () => {
       const p = plan(2025, [
         component('Salary', 'income', linear(100000, 10000)),
         component('Expenses', 'spending', constant(50000)),
-        component('401k', 'investment', constant(20000)),
       ]);
       
       const result = aggregateByYear(p, 2025, 2028);
@@ -148,7 +135,6 @@ describe('components', () => {
         year: 2025,
         income: 100000,
         spending: 50000,
-        investment: 20000,
         netCashFlow: 50000,
       });
       
@@ -156,7 +142,6 @@ describe('components', () => {
         year: 2026,
         income: 110000,
         spending: 50000,
-        investment: 20000,
         netCashFlow: 60000,
       });
       
@@ -164,7 +149,6 @@ describe('components', () => {
         year: 2027,
         income: 120000,
         spending: 50000,
-        investment: 20000,
         netCashFlow: 70000,
       });
     });
@@ -175,8 +159,6 @@ describe('components', () => {
         component('Spouse income', 'income', constant(60000)),
         component('Living expenses', 'spending', constant(80000)),
         component('Discretionary', 'spending', constant(20000)),
-        component('401k', 'investment', constant(40000)),
-        component('IRA', 'investment', constant(7000)),
       ]);
       
       const result = aggregateByYear(p, 2025, 2027);
@@ -184,7 +166,6 @@ describe('components', () => {
       // Year 2025
       expect(result[0].income).toBe(180000); // 120000 + 60000
       expect(result[0].spending).toBe(100000); // 80000 + 20000
-      expect(result[0].investment).toBe(47000); // 40000 + 7000
       expect(result[0].netCashFlow).toBe(80000); // 180000 - 100000
       
       // Year 2026 - primary job grew 3%

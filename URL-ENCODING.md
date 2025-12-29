@@ -10,7 +10,7 @@ The URL encodes a **complete `FinancialPlan`** object, which contains:
   components: [                // Array of financial components
     {
       name: string,            // Component name (e.g., "Salary")
-      category: 'income' | 'spending' | 'investment',
+      category: 'income' | 'spending',
       series: TimeSeries       // Time-varying value definition
     },
     // ... more components

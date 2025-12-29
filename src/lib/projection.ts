@@ -18,7 +18,6 @@ export interface YearlyProjection {
   year: number;
   income: number;
   spending: number;
-  investment: number; // contributions
   netWorth: number;
 }
 
@@ -26,9 +25,9 @@ export interface YearlyProjection {
  * Project net worth over time.
  * 
  * Each year the simulation:
- * 1. Calculates income, spending, and investment contributions
- * 2. Applies investment returns to existing net worth + new contributions
- * 3. Adds remaining cash flow (income - spending - investment contributions)
+ * 1. Calculates income and spending
+ * 2. Applies investment returns to existing net worth
+ * 3. Adds net cash flow (income - spending)
  * 
  * @param params - Projection parameters
  * @returns Array of yearly projections
@@ -42,24 +41,20 @@ export function projectNetWorth(params: ProjectionParams): YearlyProjection[] {
   for (let year = startYear; year < endYear; year++) {
     const income = totalByCategory(plan, 'income', year);
     const spending = totalByCategory(plan, 'spending', year);
-    const investment = totalByCategory(plan, 'investment', year);
     
-    // Investment contributions grow with returns
-    // Remaining cash flow is added after (not invested)
-    const investedAmount = netWorth + investment;
-    const afterReturns = investedAmount * (1 + investmentReturnRate);
+    // Apply returns to existing net worth
+    const afterReturns = netWorth * (1 + investmentReturnRate);
     
-    // Net cash flow after investment contributions
-    const remainingCashFlow = income - spending - investment;
+    // Add net cash flow
+    const netCashFlow = income - spending;
     
-    // New net worth = returns on investments + remaining cash
-    netWorth = afterReturns + remainingCashFlow;
+    // New net worth = returns on investments + net cash flow
+    netWorth = afterReturns + netCashFlow;
     
     results.push({
       year,
       income,
       spending,
-      investment,
       netWorth,
     });
   }

@@ -117,7 +117,7 @@ src/lib/
 ### Types
 
 ```typescript
-type ComponentCategory = 'income' | 'spending' | 'investment';
+type ComponentCategory = 'income' | 'spending';
 
 interface FinancialComponent {
   name: string;
@@ -187,7 +187,6 @@ interface YearlyProjection {
   year: number;
   income: number;
   spending: number;
-  investment: number; // contributions
   netWorth: number;
 }
 
@@ -196,9 +195,9 @@ function projectNetWorth(params: ProjectionParams): YearlyProjection[]
 
 ### Logic
 Each year:
-1. Calculate income, spending, investment contributions
-2. Net cash flow = income - spending - investment contributions
-3. Net worth grows: `(previousNetWorth + investmentContributions) * (1 + returnRate) + netCashFlow`
+1. Calculate income and spending
+2. Apply returns to existing net worth: `previousNetWorth * (1 + returnRate)`
+3. Add net cash flow: `netWorth = afterReturns + (income - spending)`
 
 ### Test Cases
 - Zero everything → net worth stays at initial

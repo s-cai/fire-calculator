@@ -15,16 +15,15 @@ describe('createState', () => {
     expect(state.investmentReturnRate).toBe(0.07);
   });
 
-  it('creates default components for income, spending, investment', () => {
+  it('creates default components for income and spending', () => {
     const stateManager = createState();
     const state = stateManager.get();
     
-    expect(state.components.length).toBe(3);
+    expect(state.components.length).toBe(2);
     
     const categories = state.components.map(c => c.category);
     expect(categories).toContain('income');
     expect(categories).toContain('spending');
-    expect(categories).toContain('investment');
   });
 
   it('starts with isStale = false', () => {

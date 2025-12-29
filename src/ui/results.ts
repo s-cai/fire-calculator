@@ -98,7 +98,6 @@ function renderTableRow(p: YearlyProjection, index: number): string {
       <td class="year-cell">${p.year}</td>
       <td class="money-cell income">${formatCurrency(p.income)}</td>
       <td class="money-cell spending">${formatCurrency(p.spending)}</td>
-      <td class="money-cell investment">${formatCurrency(p.investment)}</td>
       <td class="money-cell net-worth">${formatCurrency(p.netWorth)}</td>
     </tr>
   `;
@@ -124,7 +123,6 @@ function renderProjectionTable(projection: YearlyProjection[]): string {
               <th>Year</th>
               <th>Income</th>
               <th>Spending</th>
-              <th>Investment</th>
               <th>Net Worth</th>
             </tr>
           </thead>

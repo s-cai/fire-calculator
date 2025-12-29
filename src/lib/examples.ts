@@ -40,16 +40,6 @@ export const highSaverProfessional: ExampleScenario = {
         category: 'spending',
         series: constant(12000), // $1k/month
       },
-      {
-        name: '401k + Match',
-        category: 'investment',
-        series: constant(23000), // Max 401k
-      },
-      {
-        name: 'Brokerage',
-        category: 'investment',
-        series: constant(30000), // Additional savings
-      },
     ],
   },
 };
@@ -91,11 +81,6 @@ export const dualIncomeHousehold: ExampleScenario = {
           { series: constant(24000), startYear: 2025, endYear: 2030 }, // 5 years of childcare
         ]),
       },
-      {
-        name: '401k (Both)',
-        category: 'investment',
-        series: constant(40000), // Combined 401k contributions
-      },
     ],
   },
 };
@@ -132,15 +117,6 @@ export const careerChange: ExampleScenario = {
         category: 'spending',
         series: composite([
           { series: constant(15000), startYear: 2030, endYear: 2031 }, // Training, certification
-        ]),
-      },
-      {
-        name: 'Retirement Savings',
-        category: 'investment',
-        series: composite([
-          { series: constant(25000), startYear: 2025, endYear: 2030 }, // Aggressive before change
-          { series: constant(0), startYear: 2030, endYear: 2031 }, // Gap year
-          { series: constant(10000), startYear: 2031, endYear: 2050 }, // Reduced after
         ]),
       },
     ],
@@ -180,11 +156,6 @@ export const variableIncome: ExampleScenario = {
         series: composite([
           { series: constant(30000), startYear: 2035, endYear: 2039 }, // 4 years of tuition
         ]),
-      },
-      {
-        name: 'SEP IRA',
-        category: 'investment',
-        series: linear(15000, 1000), // Growing contributions
       },
     ],
   },

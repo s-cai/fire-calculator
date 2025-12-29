@@ -106,7 +106,6 @@ function generateId(): string {
 const DEFAULT_VALUES: Record<ComponentCategory, { name: string; value: number }> = {
   income: { name: 'Income', value: 80000 },
   spending: { name: 'Spending', value: 45000 },
-  investment: { name: 'Investment', value: 20000 },
 };
 
 function createDefaultComponent(
@@ -254,7 +253,6 @@ function readInputsFromDOM(state: UIState): Partial<UIState> {
   const simpleValues: Record<ComponentCategory, { amount?: number; growthRate?: number }> = {
     income: {},
     spending: {},
-    investment: {},
   };
   
   simpleInputs.forEach(input => {
@@ -459,26 +457,6 @@ function createDefaultComponents(baseYear: number = 2025, projectionYears: numbe
         seriesType: 'constant',
         value: 45000,
         startValue: 45000,
-        yearlyIncrement: 0,
-        yearlyGrowthRate: 0,
-      }],
-    },
-    {
-      id: generateId(),
-      name: 'Retirement Savings',
-      category: 'investment',
-      seriesType: 'composite',
-      value: 20000,
-      startValue: 20000,
-      yearlyIncrement: 0,
-      yearlyGrowthRate: 0,
-      segments: [{
-        id: generateId(),
-        startYear: baseYear,
-        endYear: baseYear + projectionYears,
-        seriesType: 'constant',
-        value: 20000,
-        startValue: 20000,
         yearlyIncrement: 0,
         yearlyGrowthRate: 0,
       }],

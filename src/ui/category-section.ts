@@ -16,7 +16,6 @@ import { constant, linear, ratio, composite, TimeSeries } from '../lib/timeserie
 const CATEGORY_CONFIG: Record<ComponentCategory, { title: string; icon: string; addLabel: string }> = {
   income: { title: 'Income', icon: '💰', addLabel: '+ New Income Source' },
   spending: { title: 'Spending', icon: '💸', addLabel: '+ New Expense' },
-  investment: { title: 'Investment', icon: '📈', addLabel: '+ New Investment' },
 };
 
 /**

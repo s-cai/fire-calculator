@@ -98,7 +98,7 @@ export function validateTimeSeries(data: unknown, path: string = 'series'): Time
 
 // --- Component Validation ---
 
-const VALID_CATEGORIES: ComponentCategory[] = ['income', 'spending', 'investment'];
+const VALID_CATEGORIES: ComponentCategory[] = ['income', 'spending'];
 
 function validateComponent(data: unknown, path: string): FinancialComponent {
   if (!isObject(data)) throw new ValidationError('expected object', path);

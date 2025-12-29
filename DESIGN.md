@@ -88,7 +88,7 @@ composite([...segments])           // CompositeSeries
 ### Types
 
 ```typescript
-type ComponentCategory = 'income' | 'spending' | 'investment';
+type ComponentCategory = 'income' | 'spending';
 
 interface FinancialComponent {
   name: string;              // "Primary salary", "Rent", "401k"
@@ -108,7 +108,7 @@ interface FinancialPlan {
 // Sum all components of a category for a given year
 totalByCategory(plan, category, year): number
 
-// Income - Spending (ignores investment contributions)
+// Income - Spending
 netCashFlow(plan, year): number
 
 // Year-by-year breakdown for a range
@@ -123,8 +123,7 @@ FinancialPlan
     ├── component("Salary", income, ratio(100k, 0.03))
     ├── component("Side gig", income, constant(20k))
     ├── component("Rent", spending, constant(24k))
-    ├── component("Food", spending, linear(12k, 500))
-    └── component("401k", investment, constant(20k))
+    └── component("Food", spending, linear(12k, 500))
     
          │
          ▼
@@ -155,7 +154,6 @@ interface YearlyProjection {
   year: number;
   income: number;
   spending: number;
-  investment: number;        // contributions
   netWorth: number;
 }
 ```
@@ -171,12 +169,10 @@ projectNetWorth(params): YearlyProjection[]
 ```
 1. income     = totalByCategory(plan, 'income', year)
 2. spending   = totalByCategory(plan, 'spending', year)
-3. investment = totalByCategory(plan, 'investment', year)
 
-4. investedAmount = previousNetWorth + investment
-5. afterReturns   = investedAmount × (1 + returnRate)
-6. remainingCash  = income - spending - investment
-7. netWorth       = afterReturns + remainingCash
+3. afterReturns = previousNetWorth × (1 + returnRate)
+4. netCashFlow   = income - spending
+5. netWorth      = afterReturns + netCashFlow
 ```
 
 ---
@@ -186,7 +182,7 @@ projectNetWorth(params): YearlyProjection[]
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         User Inputs                              │
-│  (income, spending, investments, return rate, etc.)             │
+│  (income, spending, return rate, etc.)             │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼

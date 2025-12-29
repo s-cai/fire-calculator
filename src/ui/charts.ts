@@ -34,7 +34,6 @@ const COLORS = {
   ember: '#ff8f5a',
   income: '#22c55e',
   spending: '#ef4444',
-  investment: '#3b82f6',
   gridLine: '#e5e5e5',
   text: '#64748b',
   textDark: '#1e293b',

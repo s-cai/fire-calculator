@@ -26,7 +26,6 @@
   /* Category colors */
   --color-income: #2cb67d;
   --color-spending: #e85d04;
-  --color-investment: #3b82f6;
   --color-net-worth: #ff6b35;
   
   /* Typography */
@@ -570,9 +569,6 @@ body {
   color: var(--color-spending);
 }
 
-.money-cell.investment {
-  color: var(--color-investment);
-}
 
 .money-cell.net-worth {
   color: var(--color-text);
@@ -721,9 +717,6 @@ body {
   color: var(--color-spending);
 }
 
-.category-section[data-category="investment"] .category-total {
-  color: var(--color-investment);
-}
 
 /* --- Simple Mode View --- */
 .simple-inputs {

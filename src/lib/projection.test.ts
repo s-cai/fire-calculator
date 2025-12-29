@@ -67,11 +67,10 @@ describe('projection', () => {
       expect(result[2].netWorth).toBe(120000);
     });
 
-    it('handles investment contributions with returns', () => {
+    it('handles income and spending with returns', () => {
       const p = plan(2025, [
         component('Salary', 'income', constant(100000)),
         component('Expenses', 'spending', constant(50000)),
-        component('401k', 'investment', constant(20000)),
       ]);
       const result = projectNetWorth({
         plan: p,
@@ -80,10 +79,10 @@ describe('projection', () => {
         endYear: 2026,
         investmentReturnRate: 0.10,
       });
-      // Investment: 0 + 20000 = 20000, after 10% return = 22000
-      // Remaining cash: 100000 - 50000 - 20000 = 30000
-      // Total: 22000 + 30000 = 52000
-      expect(result[0].netWorth).toBe(52000);
+      // Net worth starts at 0, after 10% return = 0
+      // Net cash flow: 100000 - 50000 = 50000
+      // Total: 0 + 50000 = 50000
+      expect(result[0].netWorth).toBe(50000);
     });
 
     it('handles negative cash flow (spending > income)', () => {
@@ -141,7 +140,6 @@ describe('projection', () => {
       const p = plan(2025, [
         component('Salary', 'income', constant(100000)),
         component('Expenses', 'spending', constant(40000)),
-        component('401k', 'investment', constant(20000)),
       ]);
       const result = projectNetWorth({
         plan: p,
@@ -155,7 +153,6 @@ describe('projection', () => {
       expect(projection).toHaveProperty('year');
       expect(projection).toHaveProperty('income');
       expect(projection).toHaveProperty('spending');
-      expect(projection).toHaveProperty('investment');
       expect(projection).toHaveProperty('netWorth');
     });
 
