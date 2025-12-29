@@ -33,12 +33,12 @@ export const highSaverProfessional: ExampleScenario = {
       {
         name: 'Living Expenses',
         category: 'spending',
-        series: constant(48000), // $4k/month
+        series: ratio(48000, 0.032), // $4k/month with 3.2% inflation
       },
       {
         name: 'Discretionary',
         category: 'spending',
-        series: constant(12000), // $1k/month
+        series: ratio(12000, 0.032), // $1k/month with 3.2% inflation
       },
     ],
   },
@@ -67,18 +67,18 @@ export const dualIncomeHousehold: ExampleScenario = {
       {
         name: 'Housing',
         category: 'spending',
-        series: constant(36000), // $3k/month
+        series: ratio(36000, 0.032), // $3k/month with 3.2% inflation
       },
       {
         name: 'Other Expenses',
         category: 'spending',
-        series: constant(48000), // $4k/month
+        series: ratio(48000, 0.032), // $4k/month with 3.2% inflation
       },
       {
         name: 'Childcare',
         category: 'spending',
         series: composite([
-          { series: constant(24000), startYear: 2025, endYear: 2029 }, // 5 years of childcare (2025-2029 inclusive)
+          { series: ratio(24000, 0.032), startYear: 2025, endYear: 2029 }, // 5 years of childcare with 3.2% inflation
         ]),
       },
     ],
@@ -110,7 +110,7 @@ export const careerChange: ExampleScenario = {
       {
         name: 'Living Expenses',
         category: 'spending',
-        series: constant(54000), // $4.5k/month
+        series: ratio(54000, 0.032), // $4.5k/month with 3.2% inflation
       },
       {
         name: 'Career Transition Costs',
@@ -141,7 +141,7 @@ export const variableIncome: ExampleScenario = {
       {
         name: 'Base Expenses',
         category: 'spending',
-        series: constant(42000), // $3.5k/month baseline
+        series: ratio(42000, 0.032), // $3.5k/month baseline with 3.2% inflation
       },
       {
         name: 'Home Purchase',
