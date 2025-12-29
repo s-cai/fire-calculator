@@ -176,9 +176,12 @@ function setupExampleListeners(container: HTMLElement, stateManager: StateManage
  */
 function loadExample(example: ExampleScenario, stateManager: StateManager): void {
   const plan = example.plan;
+  const state = stateManager.get();
   
-  // Convert all components to UI format
-  const components = plan.components.map(c => convertToUIComponent(c));
+  // Convert all components to UI format (always use composite mode with segments)
+  const components = plan.components.map(c => 
+    convertToUIComponent(c, plan.baseYear, state.projectionYears)
+  );
   
   // Load and immediately recalculate
   stateManager.loadComponents(plan.baseYear, components);

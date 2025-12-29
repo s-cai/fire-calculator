@@ -39,7 +39,9 @@ function init() {
   let stateManager;
   if (urlPlan) {
     // Load extended plan from URL (includes basic parameters)
-    const components = urlPlan.components.map(c => convertToUIComponent(c));
+    const components = urlPlan.components.map(c => 
+      convertToUIComponent(c, urlPlan.baseYear, urlPlan.projectionYears)
+    );
     stateManager = createState({ 
       baseYear: urlPlan.baseYear,
       projectionYears: urlPlan.projectionYears,

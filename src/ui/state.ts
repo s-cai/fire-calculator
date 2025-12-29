@@ -374,13 +374,18 @@ function readInputsFromDOM(state: UIState): Partial<UIState> {
 
 /**
  * Convert a FinancialComponent to a UIComponent.
+ * Always creates composite mode with segments so the editor can render input boxes.
  */
-export function convertToUIComponent(c: FinancialComponent): UIComponent {
+export function convertToUIComponent(
+  c: FinancialComponent,
+  baseYear: number = 2025,
+  projectionYears: number = 20
+): UIComponent {
   const base: UIComponent = {
     id: generateId(),
     name: c.name,
     category: c.category,
-    seriesType: 'constant',
+    seriesType: 'composite', // Always use composite mode
     value: 0,
     startValue: 0,
     yearlyIncrement: 0,
@@ -391,24 +396,46 @@ export function convertToUIComponent(c: FinancialComponent): UIComponent {
   const series = c.series;
   switch (series.type) {
     case 'constant':
-      base.seriesType = 'constant';
-      base.value = series.value;
-      base.startValue = series.value;
+      // Convert constant to composite with one segment
+      base.segments = [{
+        id: generateId(),
+        startYear: baseYear,
+        endYear: baseYear + projectionYears,
+        seriesType: 'constant',
+        value: series.value,
+        startValue: series.value,
+        yearlyIncrement: 0,
+        yearlyGrowthRate: 0,
+      }];
       break;
     case 'linear':
-      base.seriesType = 'linear';
-      base.startValue = series.startValue;
-      base.yearlyIncrement = series.yearlyIncrement;
-      base.value = series.startValue;
+      // Convert linear to composite with one segment
+      base.segments = [{
+        id: generateId(),
+        startYear: baseYear,
+        endYear: baseYear + projectionYears,
+        seriesType: 'linear',
+        value: series.startValue,
+        startValue: series.startValue,
+        yearlyIncrement: series.yearlyIncrement,
+        yearlyGrowthRate: 0,
+      }];
       break;
     case 'ratio':
-      base.seriesType = 'ratio';
-      base.startValue = series.startValue;
-      base.yearlyGrowthRate = series.yearlyGrowthRate;
-      base.value = series.startValue;
+      // Convert ratio to composite with one segment
+      base.segments = [{
+        id: generateId(),
+        startYear: baseYear,
+        endYear: baseYear + projectionYears,
+        seriesType: 'ratio',
+        value: series.startValue,
+        startValue: series.startValue,
+        yearlyIncrement: 0,
+        yearlyGrowthRate: series.yearlyGrowthRate,
+      }];
       break;
     case 'composite':
-      base.seriesType = 'composite';
+      // Already composite, just convert segments
       base.segments = series.segments.map(seg => {
         const segBase: UISegment = {
           id: generateId(),
