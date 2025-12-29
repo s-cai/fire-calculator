@@ -167,5 +167,95 @@ describe('projection', () => {
       });
       expect(result).toEqual([]);
     });
+
+    it('does not apply investment returns to negative net worth', () => {
+      const p = plan(2025, [
+        component('Expenses', 'spending', constant(50000)),
+      ]);
+      const result = projectNetWorth({
+        plan: p,
+        initialNetWorth: -10000, // Starting with debt
+        startYear: 2025,
+        endYear: 2028,
+        investmentReturnRate: 0.10, // 10% return rate
+      });
+      // With negative net worth, no investment returns should be applied
+      // Year 1: -10000 (no returns) - 50000 (spending) = -60000
+      expect(result[0].investmentReturns).toBe(0);
+      expect(result[0].netWorth).toBe(-60000);
+      // Year 2: -60000 (no returns) - 50000 = -110000
+      expect(result[1].investmentReturns).toBe(0);
+      expect(result[1].netWorth).toBe(-110000);
+      // Year 3: -110000 (no returns) - 50000 = -160000
+      expect(result[2].investmentReturns).toBe(0);
+      expect(result[2].netWorth).toBe(-160000);
+    });
+
+    it('applies investment returns only when net worth becomes positive', () => {
+      const p = plan(2025, [
+        component('Salary', 'income', constant(60000)),
+        component('Expenses', 'spending', constant(50000)),
+      ]);
+      const result = projectNetWorth({
+        plan: p,
+        initialNetWorth: -50000, // Starting with debt
+        startYear: 2025,
+        endYear: 2028,
+        investmentReturnRate: 0.10, // 10% return rate
+      });
+      // Year 1: -50000 (no returns, negative) + 10000 (net cash flow) = -40000
+      expect(result[0].investmentReturns).toBe(0);
+      expect(result[0].netWorth).toBe(-40000);
+      // Year 2: -40000 (no returns, negative) + 10000 = -30000
+      expect(result[1].investmentReturns).toBe(0);
+      expect(result[1].netWorth).toBe(-30000);
+      // Year 3: -30000 (no returns, negative) + 10000 = -20000
+      expect(result[2].investmentReturns).toBe(0);
+      expect(result[2].netWorth).toBe(-20000);
+    });
+
+    it('applies investment returns when net worth is positive', () => {
+      const p = plan(2025, [
+        component('Salary', 'income', constant(100000)),
+        component('Expenses', 'spending', constant(50000)),
+      ]);
+      const result = projectNetWorth({
+        plan: p,
+        initialNetWorth: 100000, // Starting positive
+        startYear: 2025,
+        endYear: 2027,
+        investmentReturnRate: 0.10, // 10% return rate
+      });
+      // Year 1: 100000 * 1.10 (10% return) + 50000 (net cash flow) = 160000
+      expect(result[0].investmentReturns).toBeCloseTo(10000, 0);
+      expect(result[0].netWorth).toBeCloseTo(160000, 0);
+      // Year 2: 160000 * 1.10 + 50000 = 226000
+      expect(result[1].investmentReturns).toBeCloseTo(16000, 0);
+      expect(result[1].netWorth).toBeCloseTo(226000, 0);
+    });
+
+    it('stops applying returns when net worth goes negative mid-simulation', () => {
+      const p = plan(2025, [
+        component('Salary', 'income', constant(30000)),
+        component('Expenses', 'spending', constant(50000)),
+      ]);
+      const result = projectNetWorth({
+        plan: p,
+        initialNetWorth: 50000, // Starting positive
+        startYear: 2025,
+        endYear: 2028,
+        investmentReturnRate: 0.10, // 10% return rate
+      });
+      // Year 1: 50000 * 1.10 + (-20000 net cash flow) = 35000
+      expect(result[0].investmentReturns).toBeCloseTo(5000, 0);
+      expect(result[0].netWorth).toBeCloseTo(35000, 0);
+      // Year 2: 35000 * 1.10 + (-20000) = 18500
+      expect(result[1].investmentReturns).toBeCloseTo(3500, 0);
+      expect(result[1].netWorth).toBeCloseTo(18500, 0);
+      // Year 3: 18500 * 1.10 + (-20000) = 20350 - 20000 = 350
+      // Still positive, so returns are applied
+      expect(result[2].investmentReturns).toBeCloseTo(1850, 0);
+      expect(result[2].netWorth).toBeCloseTo(350, 0);
+    });
   });
 });

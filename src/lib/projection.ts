@@ -43,8 +43,9 @@ export function projectNetWorth(params: ProjectionParams): YearlyProjection[] {
     const income = totalByCategory(plan, 'income', year);
     const spending = totalByCategory(plan, 'spending', year);
     
-    // Calculate investment returns on existing net worth
-    const investmentReturns = netWorth * investmentReturnRate;
+    // Calculate investment returns only on positive net worth
+    // (You can't get returns on debt)
+    const investmentReturns = netWorth > 0 ? netWorth * investmentReturnRate : 0;
     const afterReturns = netWorth + investmentReturns;
     
     // Add net cash flow
